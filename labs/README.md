@@ -4,6 +4,8 @@
 
 [สไลด์เวอร์ชันต่อเนื่อง](../slides/README.md) สำหรับบท 1–7, 9 และ 10
 
+[Workshop CLI Cheatsheet — SSH keepalive, psql และ Login แต่ละ role](references/cheat-sheets/workshop-command-line-th.md)
+
 ## เลือกบทเรียน
 
 | บท | คู่มือ | สิ่งที่ได้ทดลอง |
@@ -14,14 +16,16 @@
 | 4 | [Security](module-04-security.md) | Permission gates, role, sequence, RLS, audit, default privileges |
 | 4 (Clone) | [Security — Clone schema และเก็บผลจริง](module-04-security-clone.md) | สำเนาตาราง/ข้อมูล, Login แยก, ทดสอบสิทธิ์และ RLS โดยไม่คืนผลด้วย ROLLBACK |
 | 4 (Pure SQL ไทย) | [Security และ User Management ตามสไลด์ต้นทาง](module-04-security-user-management-th.md) | 0, 4A–4H, Owner delegation ให้ student_xx, Connections A/S/B/C/D, Row/Column/Audit และ recovery |
-| 5 | [Architecture](module-05-architecture.md) | Backend, MVCC สอง session, tuple, WAL, file mapping |
+| 5 | [Architecture — สไลด์ต้นฉบับไทย](module-05-architecture.md) | 5A–5G, insurance fixtures ใน architecture_m5_xx, admin SQL และ MVCC สอง sessions |
+| 5 (ต่อเนื่อง) | [Architecture — continuous เดิม](module-05-architecture-continuous.md) | ใช้ claimsure.claim เดิม; คู่มือที่ continuous runner ใช้ |
 | 6 | [Configuration](module-06-configuration.md) | อ่านค่าเดิม, memory, timeout, WAL, autovacuum, logging, decision |
 | 7 | [Backup and recovery](module-07-backup-recovery.md) | Logical restore, cold copy, physical backup, PITR |
+| 8 | [Replication & HA — 8A–8E](module-08-replication.md) | Compose primary/replica, เพิ่ม-หยุด Node, Logical subscriber และ PgBouncer |
 | 9 | [Monitoring](module-09-monitoring.md) | Workload, blocking, deadlock, statistics, Grafana evidence |
 | 10 | [Modern features](module-10-modern-features.md) | JSONB, full-text, partition, optional vector, RLS access paths |
 | Supabase | [Supabase Labs — SB0–SB10](module-10-supabase.md) | Project แยก, Table/RLS, Auth, curl GET/INSERT/UPDATE, ทดสอบข้าม Owner และคืนค่า |
 
-Module 8 ไม่อยู่ในขอบเขตครั้งนี้ ทุกบทใช้เคลม กรมธรรม์ และลูกค้าจากบท 1–2 ต่อกัน
+Module 5 ชุดต้นฉบับใช้ฐาน `architecture_m5_xx` เฉพาะ ส่วน Module 8 ใช้ Docker project และข้อมูล `insurance` แยก ชุด continuous ของบท 1–7, 9–10 ยังใช้ข้อมูลบท 1–2 ต่อกัน โดยเลือกคู่มือ 5 (ต่อเนื่อง) สำหรับเส้นทางนั้น
 
 ดู [ผลการตรวจบน PostgreSQL 18 และขอบเขต optional services](VALIDATION.md) ก่อนเตรียมห้องเรียน
 
@@ -187,7 +191,7 @@ unset PGPASSWORD
 
 | แล็บ | คู่มือและไฟล์ประกอบ |
 | --- | --- |
-| Replication / HA | [Native tutorial](module-08-replication.md), [Compose 3 nodes](module08-replication/README.md), [cheat sheet](references/cheat-sheets/module-08-replication-ha.md) |
+| Replication / HA | [Lab 8A–8E](module-08-replication.md), [Compose / Make quick start](module08-replication/README.md), [cheat sheet](references/cheat-sheets/module-08-replication-ha.md) |
 | Databasus | [คู่มือหลัก](module-07-databasus.md), [student manual พร้อมภาพ](module-07-databasus-student-manual.md), [PDF](module-07-databasus-student-manual.pdf) |
 | Supabase Data API / Authentication | [Stack และคำสั่ง](supabase/README.md), [Lab เรียก API ตาม Role/RLS พร้อม curl](../docs/tutorials/supabase-self-hosted/API-LAB.md), [HTML lesson](../docs/tutorials/supabase-self-hosted/index.html) |
 

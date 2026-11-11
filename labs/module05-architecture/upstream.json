@@ -1,0 +1,63 @@
+{
+  "source_project": "setup-postgres-server/postgres-admin-labs",
+  "slide": {
+    "source_path": "docs/slides/module-05-architecture-th.md",
+    "upstream_sha256": "dfec9b300673e1ea644aa38ad10deed53148a4f19a0bc6a49419bcbf0baf87c4",
+    "local_path": "slides/module-05-architecture-th.md",
+    "local_sha256": "7f27be2451257023e3a39ac8fe10e4ae21751b65fb4bd3771ad95353dca7d927"
+  },
+  "sql_sources": {
+    "05-architecture.sql": {
+      "source_path": "scripts/sql/05-architecture.sql",
+      "upstream_sha256": "56a1645fcb147a23074c6575e12f3d2e90bfc6d7a8171ee9602e741cf9e95945",
+      "local_sha256": "f1bd50af632ba01a068e3af894f60f20da669317b36980b5f4ec3207a490519e"
+    },
+    "05-mvcc-session-a.sql": {
+      "source_path": "scripts/sql/05-mvcc-session-a.sql",
+      "upstream_sha256": "8338bea8e7393ea203b2ec0200b60d67c3dd3479c832d0b46df3bfebc13a70cb",
+      "local_sha256": "69e1f92f3af6bdfc0ebce69d41ae4a351c01bf6d231f53f79f0da418328c897e"
+    },
+    "05-mvcc-session-b.sql": {
+      "source_path": "scripts/sql/05-mvcc-session-b.sql",
+      "upstream_sha256": "7b85381c96adb76f7a0be93e74a72eb5b56e42d03b7060a0cb7d2a24aafa5fa4",
+      "local_sha256": "f6e7b3297bfb728936a1a5085cdfbd3a29830dc9f217bb8c91a3509499001e72"
+    },
+    "05-architecture-labnotes.md": {
+      "source_path": "scripts/sql/05-architecture-labnotes.md",
+      "upstream_sha256": "b3756f0abbfc312faa4d2cc9f7819a73c519b5e1bbc19efe4936f3895b50369c",
+      "local_sha256": "b3756f0abbfc312faa4d2cc9f7819a73c519b5e1bbc19efe4936f3895b50369c"
+    }
+  },
+  "assets": {
+    "module-05-activity-page-tuple-map-enterprise-blue.png": "ff45f9dcf180b7e30effd551ebf92099cba54c3650922fa69aed51ec4fc83db9",
+    "module-05-architecture-cover-enterprise-blue.png": "6a153636bc6254bbe1a18bb029f870ed1b95d46fff15f46ffd7b18b9090d3a06",
+    "module-05-architecture-recap-enterprise-blue.png": "220a7481aceca9ff097d9cb8fd69d8aedc4ff7c573ce38a5fa3b4e074a6ea4f6",
+    "module-05-background-processes-what-when-why-enterprise-blue.png": "1078545e47b6fb9da109ed03c7242eb1db7deaf94fd8e434225801415f2af381",
+    "module-05-claim-concept-check-enterprise-blue.png": "604831002216560511d13d2599a0222c9b043cd1832f22e53daf1d60ce8fb990",
+    "module-05-delete-mark-tuple-enterprise-blue.png": "e34a4ca25e43129fa8dfe2dbc4b40e5e03d03ac7d65480c7f564a1022323c697",
+    "module-05-delete-visibility-vacuum-enterprise-blue.png": "ce581b7010976b4d4275848b805329fa9685308b7ec1af4a655e6b43ba6100ae",
+    "module-05-insert-commit-writeback-enterprise-blue.png": "b09ff83836765489d42529353663f8e7e0e1366cd249d94a3a325e6324b28931",
+    "module-05-insert-create-tuple-enterprise-blue.png": "9301679e09c1406f4686d500011a16c05bbfa7385153fdb98bdfb3718fb162ee",
+    "module-05-logical-row-state-enterprise-blue.png": "cc2144bfd33c21b6eaeca763c6258e0ef08029b7c68441b267a00d56a5f6c61c",
+    "module-05-maintenance-workers-enterprise-blue.png": "8897d753a311f0371cd96220f6ca31850ac382cd3032812210c43e583c68eb3e",
+    "module-05-page-tuple-states-explained-enterprise-blue.png": "112a1f240d39ab4603d0be53ae9f907b125fe707a615574af4fd461b1c973d7a",
+    "module-05-recovery-distribution-redo-enterprise-blue.png": "0fe6c2bb9b41744631ed65ca139aae5bdd1fe0288ebc0666e739c182381e1095",
+    "module-05-select-load-visibility-result-enterprise-blue.png": "86f9fe0c966232b4c8824c683e9c6c3b9e649f1564ab77c5be76633e9f91e5c1",
+    "module-05-select-plan-cache-enterprise-blue.png": "d71a2e43997a259d43b5176ebf2134ed9f17f0db856582a7aa6364041b74f531",
+    "module-05-server-architecture-enterprise-blue.png": "304c7b9592aaa74d9e16120eb5eb0b63cd3a74cc8e5e165971fdead709d8d00a",
+    "module-05-tuple-mvcc-enterprise-blue.png": "d310b06bd9cbc70f10851e63b299aff2ff3b7470ebb85cce1010dd5e8fcfd9a1",
+    "module-05-update-create-versions-enterprise-blue.png": "5de90ef0a4631eae1a3c70bc205052f7a566bde48ec6176ce35eeb6daa4bc350",
+    "module-05-update-snapshot-cleanup-enterprise-blue.png": "a3d8a5934bcc95f3eba3aaa5cd932790ba5872728b7b994921b3ea0bd049c0c0",
+    "module-05-wal-durability-enterprise-blue.png": "04829e07549ccf3b8f3efd77c60a3a12a1a9826714b9af33e5b04af8dc633637"
+  },
+  "adaptations": [
+    "Preserve the 33-slide source order, Thai text, original diagrams and 20 bitmap assets.",
+    "Scope source CSS to module-five, consolidate repeated style blocks and use layoutClass for two-column roots. Long command/diagram pages can scroll vertically.",
+    "Correct the overview 1A–1G labels to 5A–5G and its MVCC target to CLM-L1-005, matching detailed slides and source SQL.",
+    "Replace unavailable scripts/psql.sh commands with local psql/Make commands.",
+    "Use the newer source 05-architecture.sql measurement (separate LSN samples, commit/flush evidence, own-ID cleanup) for slide 5F instead of the older CTE-only snippet.",
+    "Add dedicated architecture_m5_01..20 guards and a minimal standalone insurance fixture; source SQL requires Superuser and seeded claims but the source slide directory does not provide that bootstrap.",
+    "Retain the former 29-slide continuous deck/guide separately and keep the continuous runner mapped to its existing guide.",
+    "Align 5A with two real postgres connections, 5D.4 with own-event-ID/savepoint cleanup from the newer source SQL, and 5E with the post-COMMIT read. Clarify backend WAL flush in the 5F diagram."
+  ]
+}

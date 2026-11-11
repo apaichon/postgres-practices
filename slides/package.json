@@ -1,6 +1,6 @@
 {
   "name": "postgres-admin-labs-slides",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "engines": {
     "node": ">=22.12.0"
@@ -21,12 +21,18 @@
     "build:4:clone": "slidev build module-04-security-clone.md --out dist/module04-clone",
     "slides:4:th": "slidev module-04-security-user-management-th.md",
     "build:4:th": "slidev build module-04-security-user-management-th.md --out dist/module04-th",
-    "slides:5": "slidev module-05-architecture.md",
+    "slides:5": "slidev module-05-architecture-th.md",
     "slides:6": "slidev module-06-configuration-simple.md",
     "slides:7": "slidev module-07-backup-recovery.md",
     "slides:9": "slidev module-09-monitoring.md",
     "slides:10": "slidev module-10-modern-features-supabase.md",
-    "slides:8": "slidev module-08-replication-th.md",
-    "slides:8:en": "slidev module-08-replication.md"
+    "slides:8": "slidev module-08-replication.md",
+    "slides:8:en": "slidev module-08-replication.md",
+    "slides:8:th": "slidev module-08-replication-th.md",
+    "build:8": "slidev build module-08-replication.md --out dist/module08",
+    "build:8:th": "slidev build module-08-replication-th.md --out dist/module08-th",
+    "slides:5:th": "slidev module-05-architecture-th.md",
+    "build:5": "slidev build module-05-architecture-th.md --out dist/module05",
+    "slides:5:continuous": "slidev module-05-architecture-continuous.md"
   }
 }

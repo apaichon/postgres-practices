@@ -1,62 +1,93 @@
-# Always use a distinct project per student (see .env.example and the lab guide).
-# Node names stay fixed; the primary role can move from pg1 to pg2.
 name: ${COMPOSE_PROJECT_NAME:-postgres-practices-m8}
 
-x-node: &node
+x-postgres: &postgres
   image: ${M8_IMAGE:-postgres:18-alpine@sha256:123b17998ccaf47e53b502e8c6a1e79afd8f579c6f3eec83c563da026f957395}
   entrypoint: ["/bin/bash", "/lab/node-entrypoint.sh"]
-  command: ["postgres"]
   restart: "no"
   stop_grace_period: 30s
   shm_size: 128mb
   environment: &environment
     PGDATA: /var/lib/postgresql/18/docker
-    POSTGRES_DB: claimsure_m8
+    POSTGRES_DB: claimsure
     POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: ${M8_ADMIN_PASSWORD:?Set M8_ADMIN_PASSWORD in .env}
-    M8_REPLICATION_PASSWORD: ${M8_REPLICATION_PASSWORD:?Set M8_REPLICATION_PASSWORD in .env}
+    POSTGRES_PASSWORD: ${M8_ADMIN_PASSWORD:?Run make lab8-init}
+    M8_REPLICATION_PASSWORD: ${M8_REPLICATION_PASSWORD:?Run make lab8-init}
+    M8_APP_PASSWORD: ${M8_APP_PASSWORD:?Run make lab8-init}
     POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --data-checksums
   networks: [replication]
   healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U postgres -d claimsure_m8"]
+    test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d claimsure"]
     interval: 2s
     timeout: 3s
-    retries: 30
+    retries: 45
 
 services:
-  pg1:
-    <<: *node
+  primary:
+    <<: *postgres
     environment:
       <<: *environment
-      M8_NODE: pg1
-      M8_BOOTSTRAP: "true"
-    ports: ["127.0.0.1:${M8_PG1_PORT:-55811}:5432"]
+      M8_NODE: primary
+    ports: ["127.0.0.1:${M8_PRIMARY_PORT:-55811}:5432"]
     volumes:
-      - pg1_data:/var/lib/postgresql
+      - primary_data:/var/lib/postgresql
       - ./:/lab:ro
-  pg2:
-    <<: *node
+  replica:
+    <<: *postgres
     environment:
       <<: *environment
-      M8_NODE: pg2
-    ports: ["127.0.0.1:${M8_PG2_PORT:-55812}:5432"]
+      M8_NODE: replica
+    depends_on:
+      primary: {condition: service_healthy}
+    ports: ["127.0.0.1:${M8_REPLICA_PORT:-55812}:5432"]
     volumes:
-      - pg2_data:/var/lib/postgresql
+      - replica_data:/var/lib/postgresql
       - ./:/lab:ro
-  pg3:
-    <<: *node
+  replica2:
+    <<: *postgres
+    profiles: [ha-lab]
     environment:
       <<: *environment
-      M8_NODE: pg3
-    ports: ["127.0.0.1:${M8_PG3_PORT:-55813}:5432"]
+      M8_NODE: replica2
+    depends_on:
+      primary: {condition: service_healthy}
+    ports: ["127.0.0.1:${M8_REPLICA2_PORT:-55813}:5432"]
     volumes:
-      - pg3_data:/var/lib/postgresql
+      - replica2_data:/var/lib/postgresql
       - ./:/lab:ro
+  subscriber:
+    <<: *postgres
+    profiles: [logical-lab]
+    environment:
+      <<: *environment
+      M8_NODE: subscriber
+    ports: ["127.0.0.1:${M8_SUBSCRIBER_PORT:-55814}:5432"]
+    volumes:
+      - subscriber_data:/var/lib/postgresql
+      - ./:/lab:ro
+  pgbouncer:
+    image: ${M8_POOL_IMAGE:-edoburu/pgbouncer@sha256:4c1ca296ef525f108f5d3552cc337c0c09587cf8dae7f0067fd93349e47dc1cd}
+    entrypoint: ["/bin/sh", "/lab/pgbouncer-entrypoint.sh"]
+    restart: "no"
+    environment:
+      M8_ADMIN_PASSWORD: ${M8_ADMIN_PASSWORD:?Run make lab8-init}
+      M8_APP_PASSWORD: ${M8_APP_PASSWORD:?Run make lab8-init}
+    depends_on:
+      primary: {condition: service_healthy}
+    ports: ["127.0.0.1:${M8_POOL_PORT:-55820}:6432"]
+    volumes: ["./:/lab:ro"]
+    tmpfs: ["/tmp:mode=1777"]
+    networks: [replication]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U claim_app -d claimsure"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
 
 volumes:
-  pg1_data:
-  pg2_data:
-  pg3_data:
+  primary_data:
+  replica_data:
+  replica2_data:
+  subscriber_data:
 networks:
   replication:
     internal: true

@@ -6,6 +6,14 @@
 
 ใช้ข้อมูลจำลองใน `public.claimsure_claims` ของ Supabase project ที่ได้รับมอบหมาย ฐานนี้แยกจาก `claimsure_xx` ของบท PostgreSQL ต่อเนื่อง และไม่ได้ sync ข้อมูลกับ `claimsure.claim` อัตโนมัติ
 
+ถ้าใช้ VS Code เปิด [REST Client — data-api.http](supabase/data-api.http) เพื่อกด **Send Request** ทีละข้อแทนการพิมพ์ curl ได้ ดู [การตั้งค่าและลำดับ request](supabase/README.md#ทดสอบทีละ-request-ด้วย-vs-code-rest-client) ไฟล์อ่าน `.env` และส่งต่อ token/UUID จาก Login response ให้เอง
+
+หลังเตรียม baseline แล้ว สามารถรัน request ทั้ง 18 ข้อด้วย Python คำสั่งเดียว: `python3 labs/supabase/run_api.py` ดู [วิธีระบุหมายเลขและอ่านผล PASS/FAIL](supabase/README.md#รัน-api-ทั้งชุดด้วย-python-คำสั่งเดียว) สคริปต์อ่านไฟล์ HTTP ชุดเดียวกันและคืนแถวทดลองเมื่อจบ
+
+ถ้าต้องการ Shell/curl เลือกทดสอบทีละข้อได้ เช่น `bash labs/supabase/run_api.sh 04` หรือ `bash labs/supabase/run_api.sh all` เพื่อรันทั้งชุด ดู [Shell script และการเตรียม dependencies ให้อัตโนมัติ](supabase/README.md#ทดสอบทีละ-api-ด้วย-shell-script)
+
+สำหรับอ่านโค้ด curl สั้น ๆ ทีละ API ใช้ [ไฟล์ย่อย 01–18 พร้อมตารางผลที่คาด](supabase/curl/README.md) เช่น `bash labs/supabase/curl/12-update-own-claim.sh` แต่ละไฟล์ Login/เตรียมแถวทดลองและ cleanup ให้เอง
+
 ## ก่อนเริ่ม
 
 - มี repository สำเนาของตน, Bash, Python 3.10+, `curl` และ Browser
@@ -31,6 +39,8 @@
 | SB8 | คืนข้อมูลและตรวจครบชุด | เหลือ 4 แถว; verify ผ่าน 15 กรณี |
 | SB9 | Optional: Storage และ Function | verify แบบ extended ผ่าน 18 กรณี |
 | SB10 | ส่งหลักฐานและปิดระบบ | รายงานไม่มี passwords/tokens |
+
+การจับคู่กับ REST Client: **SB3 → 01**, **SB4 → 02–05**, **SB5 → 06–08**, **SB6 → 09–12**, **SB7 → 13–16**, **SB8 → 17–18** การกด request ในไฟล์ HTTP ใช้ทดแทนคำสั่ง curl ของช่วงนั้น จึงเลือกทำอย่างใดอย่างหนึ่งต่อรอบเพื่อให้จำแถวที่จะ cleanup ได้ถูกต้อง
 
 ## SB0 — เตรียม project และตรวจ endpoint
 

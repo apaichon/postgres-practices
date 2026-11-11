@@ -1,6 +1,6 @@
 {
-  "captured_at": "2026-11-10T09:30:53Z",
-  "base_url": "http://127.0.0.1:28010",
+  "captured_at": "2026-11-11T07:32:44Z",
+  "base_url": "http://127.0.0.1:18010",
   "checks": [
     {
       "check": "BKK sign-in: Auth issues a user JWT",
@@ -138,12 +138,12 @@
     {
       "check": "BKK reads the newly inserted claim",
       "method": "GET",
-      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no&id=eq.ea49ebca-5f45-4d08-86a3-cafc4e8a87e6",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no&id=eq.84c1de01-e512-4e96-b1e5-b9cbf7d5b712",
       "status": 200,
       "pass": true,
       "rows": [
         {
-          "claim_no": "CLM-API-7ce844e87afc41049f3adfdb02e8aabd",
+          "claim_no": "CLM-API-b5a37378df2646a6b1b62263448720f1",
           "branch": "BKK",
           "amount": 10.0,
           "status": "NEW"
@@ -153,7 +153,7 @@
     {
       "check": "CM cannot see the BKK inserted claim",
       "method": "GET",
-      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no&id=eq.ea49ebca-5f45-4d08-86a3-cafc4e8a87e6",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no&id=eq.84c1de01-e512-4e96-b1e5-b9cbf7d5b712",
       "status": 200,
       "pass": true,
       "rows": []
@@ -161,12 +161,12 @@
     {
       "check": "BKK UPDATE own claim status",
       "method": "PATCH",
-      "path": "/rest/v1/claimsure_claims?id=eq.ea49ebca-5f45-4d08-86a3-cafc4e8a87e6",
+      "path": "/rest/v1/claimsure_claims?id=eq.84c1de01-e512-4e96-b1e5-b9cbf7d5b712",
       "status": 200,
       "pass": true,
       "rows": [
         {
-          "claim_no": "CLM-API-7ce844e87afc41049f3adfdb02e8aabd",
+          "claim_no": "CLM-API-b5a37378df2646a6b1b62263448720f1",
           "status": "REVIEW"
         }
       ]
@@ -174,10 +174,9 @@
     {
       "check": "BKK UPDATE owner to CM rejected",
       "method": "PATCH",
-      "path": "/rest/v1/claimsure_claims?id=eq.ea49ebca-5f45-4d08-86a3-cafc4e8a87e6",
+      "path": "/rest/v1/claimsure_claims?id=eq.84c1de01-e512-4e96-b1e5-b9cbf7d5b712",
       "status": 403,
       "pass": true
     }
-  ],
-  "execution_environment": "Isolated temporary Compose project; test stack removed after verification."
+  ]
 }

@@ -7,32 +7,42 @@ classroom database and does not start either Docker stack.
 
 | Lab | Compose | Environment | Host endpoints |
 | --- | --- | --- | --- |
-| 8 — physical streaming replication / manual failover | [module08-replication/compose.yaml](module08-replication/compose.yaml) | PostgreSQL 18: `pg1`, `pg2`, `pg3` | `127.0.0.1:55811`, `55812`, `55813` |
+| 8 — 8A–8E replication / logical / pooler | [module08-replication/compose.yaml](module08-replication/compose.yaml) | PostgreSQL 18: `primary`, `replica`, optional `replica2` / `subscriber`, PgBouncer | `127.0.0.1:55811`–`55814`; pooler `55820` |
 | 10 — Supabase Data API + Authentication | [supabase/compose.yaml](supabase/compose.yaml) | PostgreSQL 17 + Auth + Data API + RLS; other services are optional exercises | Studio/API `http://127.0.0.1:18000`; SQL pooler `15480` / `16543` |
 
-## Lab 8 — initialize, clone and verify
+## Lab 8 — source slide workshop 8A–8E
+
+Run from the repository root:
 
 ```bash
-bash labs/docker-labs.sh 8 init
-bash labs/docker-labs.sh 8 config
-bash labs/docker-labs.sh 8 pull
-bash labs/docker-labs.sh 8 up
-bash labs/docker-labs.sh 8 verify
-bash labs/docker-labs.sh 8 psql pg1
+make lab8-init
+make lab8-config
+make up
+make sql-m8
+make lab8-verify
+make node-add
+make node-down NODE=replica2
+make lab8-wal
+make node-up NODE=replica2
+make logical-up
+make logical-verify
+make pool-verify
 ```
 
-`init` generates private passwords in `labs/module08-replication/.env` without
-overwriting an existing file. `up` starts pg1, creates physical slots, clones
-empty pg2/pg3 volumes with `pg_basebackup`, then starts both standbys. Repeating
-`up` resumes the original topology without cloning existing data.
+`up` starts **primary + replica + PgBouncer**. Empty physical standby volumes
+clone automatically with `pg_basebackup`; resume keeps existing data. `node-add`
+starts optional `replica2` (`ha-lab` profile). `logical-up` starts a separate
+logical `subscriber` (`logical-lab` profile) for the two published tables.
 
-`verify` finds the writable node, checks the cluster IDs, inserts a unique
-probe and waits for replay on both standbys, then checks that standby writes
-fail. It removes its probe afterward. Success begins with `PASS: one primary`.
+The shared launcher remains available, for example
+`bash labs/docker-labs.sh 8 up` and `bash labs/docker-labs.sh 8 psql primary`.
+`verify` checks physical replay/read-only behavior, `logical-verify` checks
+row changes on the subscriber, and `pool-verify` checks transaction pooling
+with a real app login and tenant RLS.
 
-For manual cloning, lag, failover and rejoin, follow the
-[Lab 8 Docker walkthrough](module08-replication/README.md). After promotion,
-use its explicit node commands; the startup helper refuses a changed topology.
+Use the [Thai Lab 8 workbook](module-08-replication.md) for commands, SQL,
+expected results and the closing failover runbook. Slide command:
+`make slides MODULE=8 PORT=3048` (English source) or `MODULE=8:th` (Thai).
 
 ## Lab 10 — Supabase, Auth and RLS
 
@@ -80,7 +90,7 @@ bash labs/docker-labs.sh 8 status
 bash labs/docker-labs.sh 10 status
 bash labs/docker-labs.sh 8 stop
 bash labs/docker-labs.sh 10 stop
-# Resume the original topology / Supabase with the corresponding up command.
+# Resume Lab 8 core / Supabase with up; add Lab 8 optional nodes with node-add / logical-up.
 # Remove containers and networks while keeping named volumes:
 bash labs/docker-labs.sh 8 down
 bash labs/docker-labs.sh 10 down
@@ -92,7 +102,7 @@ existing data does not rotate database credentials. Neither launcher passes
 
 ## Existing stacks and multiple students
 
-The Lab 8 template uses `postgres-practices-m8_xx`: replace `xx` with your assigned number before startup. Lab 10 uses `postgres-practices-m10`. Set a unique `COMPOSE_PROJECT_NAME` and unused host
+The Lab 8 template uses `postgres-practices-m8`; add a student suffix when running multiple stacks. Lab 10 uses `postgres-practices-m10`. Set a unique `COMPOSE_PROJECT_NAME` and unused host
 ports in each `.env` before first startup. Ports are bound to loopback.
 If another Supabase already uses port 18000, change all three together:
 
@@ -106,8 +116,9 @@ DB_TRANSACTION_PORT=16553
 
 Keep the internal `POSTGRES_PORT=5432`. For a second Supabase instance, use a
 separate directory copy so Functions/Snippets bind mounts are independent too.
-These exercises implement manual failover and local self-hosting; no automatic
-primary election, public HTTPS or production HA is configured.
+Lab 8 implements replica outage/catch-up, logical replication and pooling;
+its closing failover runbook explains primary cutover. Automatic primary
+election, public HTTPS and production HA are outside these workshop stacks.
 
 References: [PostgreSQL base backup](https://www.postgresql.org/docs/18/app-pgbasebackup.html),
 [PostgreSQL failover](https://www.postgresql.org/docs/18/warm-standby-failover.html),

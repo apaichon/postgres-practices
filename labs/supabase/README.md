@@ -58,6 +58,83 @@ python3 labs/supabase/lab.py verify
 
 BKK/CM เป็นผู้ใช้ต่างคนใน Role เดียวกัน RLS ใช้ `auth.uid() = adjuster_id` กำหนดแถวที่เห็น ไม่ใช่การสร้าง Role แยกตามสาขา ตัวทดสอบยังตรวจ Password ผิด, Token ไม่ถูกต้อง, การอ่านข้าม Owner, INSERT/UPDATE ของตน และการเขียนข้าม Owner
 
+### อ่าน curl แยกไฟล์ทีละ API
+
+เปิด [curl/ — คำสั่ง curl แยก 18 ไฟล์](curl/README.md) เพื่ออ่าน Method, URL, Headers และ JSON body ของแต่ละ API ได้โดยตรง เช่น:
+
+```bash
+bash labs/supabase/curl/04-read-bkk.sh
+bash labs/supabase/curl/12-update-own-claim.sh
+```
+
+แต่ละไฟล์รันเดี่ยวได้และเตรียม Login/แถวทดลองพร้อม cleanup ให้เอง เลข 01–18 ตรงกับไฟล์ HTTP ส่วนการตั้งค่าและตัวช่วยร่วมอยู่ใน [curl/_common.sh](curl/_common.sh) ตัวรันด้านล่างเรียกไฟล์ย่อยชุดเดียวกัน
+
+### ทดสอบทีละ API ด้วย Shell script
+
+ใช้ [run_api.sh](run_api.sh) กับ **Bash 3.2+, curl, jq และ uuidgen หรือ openssl** โดยไม่เรียก Python เมื่อ stack พร้อมและมี baseline จาก `seed` แล้ว รันจาก root:
+
+```bash
+# ดูชื่อและหมายเลขทั้ง 18 กรณี โดยยังไม่เชื่อมต่อ API
+bash labs/supabase/run_api.sh --list
+# ทดสอบครบทุกข้อ
+bash labs/supabase/run_api.sh all
+# เลือกทดสอบ BKK SELECT ด้วยหมายเลข
+bash labs/supabase/run_api.sh 04
+# หรือเลือกด้วยชื่อ request
+bash labs/supabase/run_api.sh updateOwnClaim
+```
+
+เลือกหมายเลข `01`–`18` หรือชื่อเดียวกับใน [data-api.http](data-api.http) ได้ สคริปต์จะ Login และสร้างแถวชั่วคราวที่ข้อนั้นต้องใช้ให้อัตโนมัติ โดยแสดง `SETUP PASS` สำหรับขั้นเตรียม และ `PASS` สำหรับข้อที่เลือก ถ้าเลือก `all` จะทดสอบทั้ง 18 ข้อตามลำดับ
+
+เมื่อเลือกข้อเดียวจะแสดง JSON ของ Data API ให้ดูด้วย ส่วน Auth responses จะซ่อนไว้ ถ้าต้องการดู JSON ระหว่างรันทุกข้อ ให้ใช้ `all --show-body` รายงานที่ไม่มี credentials อยู่ที่ `labs/supabase/artifacts/api-results-shell.json`
+
+สคริปต์อ่าน `.env` ข้างไฟล์ ระบุหมายเลขด้วย `--student xx` โดยแทน xx เป็นเลขจริง หรือใช้ `STUDENT_NO` / `@studentNo` ตามลำดับเดียวกับเวอร์ชัน Python เปลี่ยน config/report ได้ด้วย `--env PATH` / `--report PATH`; `--help` แสดงตัวเลือกทั้งหมด
+
+แต่ละการเรียกเป็นรอบทดลองแยกกัน หลังจบหรือเกิดข้อผิดพลาดจะลบแถวชั่วคราวของรอบนั้นและเทียบ baseline เดิม จึงเลือกทดสอบแต่ละข้อซ้ำได้โดยไม่ต้องค้าง token หรือ UUID จาก shell รอบก่อน กรณีเป้าหมายข้อ 09 จะสร้างแถวให้ตรวจผลแล้วลบคืนก่อนสคริปต์จบ ไม่มีการ seed/reset ให้อัตโนมัติ
+
+### รัน API ทั้งชุดด้วย Python คำสั่งเดียว
+
+เมื่อ stack พร้อมและมี Demo baseline จาก `seed` แล้ว รันจาก root:
+
+```bash
+python3 labs/supabase/run_api.py
+```
+
+สคริปต์อ่าน **request ทั้ง 18 ข้อจาก [data-api.http](data-api.http)** แล้วส่งตามลำดับ พร้อม Login, ส่งต่อ token/UUID, ตรวจ HTTP status และผล RLS ไม่ต้องติดตั้ง Python packages เพิ่ม เติมหมายเลขได้ด้วย `--student xx` โดยแทน xx เป็นเลขจริง หรือใช้ `STUDENT_NO`; ถ้าไม่ระบุจะอ่าน `@studentNo` จากไฟล์ HTTP ไม่มีค่าเริ่มต้นเป็นนักเรียน 01
+
+```bash
+# ตรวจรายการโดยยังไม่อ่าน credentials หรือเรียก API
+python3 labs/supabase/run_api.py --list
+# ระบุหมายเลขของตนแทนค่าจากไฟล์ HTTP
+python3 labs/supabase/run_api.py --student xx
+```
+
+URL/credentials อ่านจาก `labs/supabase/.env` ผลแสดง PASS/FAIL ทีละข้อและบันทึก [api-results.json](artifacts/api-results.json) ซึ่งจะถูกสร้างเมื่อรัน ภายใน report ไม่มี passwords, Keys หรือ Login responses เปลี่ยนตำแหน่งรายงานได้ด้วย `--report PATH` และเลือกไฟล์ credentials อีกชุดด้วย `--env PATH`
+
+ก่อนเริ่ม สคริปต์ตรวจว่ามีเคลม Demo สี่รายการ หลังจบหรือเมื่อเกิดข้อผิดพลาดจะลบเฉพาะแถวชั่วคราวของรอบนี้และตรวจข้อมูลตั้งต้นเทียบกับก่อนรัน รวมกรณี POST สำเร็จแต่ response หาย เมื่อขั้นใดไม่ผ่านจะหยุดขั้นถัดไปและคืน exit code ที่ไม่ใช่ 0 ไม่มีการ `seed`, reset หรือเปิด stack ให้อัตโนมัติ ใช้บน project ฝึกของตนที่มี service-role credential สำหรับ cleanup ตามข้อ 17/18 ของไฟล์ HTTP
+
+### ทดสอบทีละ request ด้วย VS Code REST Client
+
+1. ติดตั้ง extension **REST Client** (`humao.rest-client`) ใน VS Code
+2. รัน `bash labs/docker-labs.sh 10 seed` จาก root เพื่อเตรียม Demo ครั้งแรก การรันซ้ำจะคืนค่าเคลม Demo ทั้งสี่ตาม seed
+3. เปิด [data-api.http](data-api.http) ซึ่งอยู่โฟลเดอร์เดียวกับ `.env` แทน `xx` ที่ `@studentNo` ด้วยหมายเลขตน แล้วกด **Send Request** ทีละข้อ 01–18 ตามลำดับ
+4. แต่ละข้อระบุ HTTP status และผลที่คาดไว้ เริ่มจาก anon, Login BKK/CM, อ่านตาม Owner, INSERT/UPDATE, กรณีถูกปฏิเสธ และ cleanup
+
+ไฟล์ใช้ `{{$dotenv ...}}` อ่าน URL, Keys และ Demo credentials จาก `.env` จึงใช้พอร์ตที่ตั้งไว้ได้ทันที ไม่ต้องคัดลอก Secrets ลงไฟล์ HTTP ส่วน named requests ดึง token/user ID จาก Login response ให้เอง ต้องส่ง 02/03 ก่อน request ที่อ้างถึง และ Login ใหม่เมื่อ token หมดอายุ ดู [REST Client: variables](https://github.com/Huachao/vscode-restclient#variables)
+
+| ลำดับ request | การทดลอง |
+| --- | --- |
+| 01 | อ่านก่อน Login |
+| 02–05 | Login BKK/CM แล้วอ่านข้อมูลของแต่ละคน |
+| 06–08 | อ่านข้าม Owner, token ไม่ถูกต้อง, password ผิด |
+| 09–12 | เพิ่ม/อ่าน/แก้ไขแถวทดลองของตน |
+| 13–16 | ปฏิเสธการโอน Owner/เพิ่มให้คนอื่น, CM PATCH แล้วได้ `[]`, BKK ยืนยันข้อมูลไม่เปลี่ยน |
+| 17–18 | ผู้สอน/backend คืนแถวทดลองและตรวจ baseline |
+
+ขั้น 09 เพิ่มแถวทดลองใหม่ ให้ทำ 10–17 ให้จบก่อนส่ง 09 ซ้ำ เพราะขั้น 17 ใช้ ID, Owner และ claim_no จาก response ล่าสุด เก็บสี่แถวตั้งต้นไว้ Login responses แสดง access tokens ตามปกติของ REST Client จึงไม่บันทึกหรือแชร์ response ที่มี Secrets; `SERVICE_ROLE_KEY` ในขั้น 17/18 ใช้เฉพาะเครื่องมือผู้สอน/backend
+
+ถ้า stack อยู่บน server ให้ใช้ **VS Code Remote-SSH** เปิด repository สำเนาของตนบน server เพื่อให้ `.env` และ `127.0.0.1` ตรงกับที่รัน API หากใช้เครื่องตนกับ SSH tunnel ให้ตั้ง endpoint ของ client ให้ตรง port ของ tunnel หากตัวแปร response ยังไม่ resolve ให้ส่ง Login 02/03 หรือ createClaim 09 ตามที่ request นั้นอ้างก่อน แล้วค่อยส่ง request ต่อ
+
 ### หัวข้อเสริม — Storage และ Edge Functions
 
 บทหลักใช้ `seed` / `api-demo` / `verify` ได้โดยไม่ต้องเตรียม Bucket หากเลือกทำ Storage/Functions หรือจับภาพหน้าจอส่วน Storage ให้เพิ่ม:
@@ -138,7 +215,7 @@ docker compose --env-file .env -f compose.yaml logs --tail=80 auth rest meta
 docker compose --env-file .env -f compose.yaml logs --tail=80 api-gw studio
 ```
 
-- **Port is already allocated:** เปลี่ยน Host Ports ตามตารางด้านบน แล้ว `up` ใหม่
+- **Port is already allocated:** ตรวจทั้ง `API_GW_HTTP_PORT`, `DB_SESSION_PORT` และ `DB_TRANSACTION_PORT` ใน `.env` เพราะถ้ามี Supabase stack เดิมอยู่ ทั้งสามพอร์ตอาจชนพร้อมกัน ดูตัวอย่างด้านล่าง
 - **401 ที่ Studio:** ตรวจ Dashboard Basic Auth; เปิด Incognito เพื่อเลิกใช้ Credentials ที่ Browser จำไว้
 - **401 จาก Data API:** ตรวจ `apikey`, Bearer Token, JWT Expiry และการลงชื่อให้ตรงกัน
 - **API ได้ `[]` แต่ SQL Editor ได้ 4 แถว:** เป็นผลที่ตั้งใจเมื่อ Request ไม่มีสิทธิ์ตาม RLS; SQL Editor ใช้ Admin
@@ -146,6 +223,27 @@ docker compose --env-file .env -f compose.yaml logs --tail=80 api-gw studio
 - **Service ไม่ Healthy:** ตรวจ RAM/Disk และ Logs เฉพาะ Service; อย่าใช้ `down -v` เพื่อแก้แบบเดาเพราะจะลบข้อมูล
 - **Playwright ไม่พบ Browser:** ติดตั้ง Chromium ตามคำสั่งด้านบน หรือเลือก Channel/Executable ที่มีอยู่
 - **`/functions/v1/hello` ตอบ `INVALID_API_KEY`:** ตัวอย่าง `hello` ของ Upstream รุ่นนี้ใช้ `@supabase/server` ที่รับ Opaque API Keys รุ่นใหม่ ชุด Lab ใช้ HS256 Keys จึงให้ตัวอย่าง `claimsure-health` แยกไว้และเปิด JWT Verification ตามปกติ หากจะใช้ตัวอย่าง `hello` เดิม ให้ย้ายทั้งชุดไปใช้ [New Auth/API Keys](https://supabase.com/docs/guides/self-hosting/self-hosted-auth-keys) ตามคู่มือ Upstream
+
+### ตัวอย่างแก้พอร์ตชนกับ stack เดิม
+
+หากพอร์ต `18000`, `15480`, `16543` ถูกใช้อยู่แล้ว ให้ตรวจว่าพอร์ตใหม่ว่าง แล้วแก้เฉพาะค่าต่อไปนี้ใน `labs/supabase/.env` โดยเก็บ Secrets และค่าอื่นไว้:
+
+```dotenv
+API_GW_HTTP_PORT=18010
+DB_SESSION_PORT=15490
+DB_TRANSACTION_PORT=16553
+SUPABASE_PUBLIC_URL=http://127.0.0.1:18010
+API_EXTERNAL_URL=http://127.0.0.1:18010/auth/v1
+```
+
+จาก root ของ repository รัน:
+
+```bash
+bash labs/docker-labs.sh 10 config
+bash labs/docker-labs.sh 10 up
+```
+
+เปิด Studio ที่ `http://127.0.0.1:18010` ใช้ Session Pooler ที่ `127.0.0.1:15490` และ Transaction Pooler ที่ `127.0.0.1:16553` การรัน `up` จะสร้าง Containers ที่ config เปลี่ยนใหม่โดยใช้ Volumes เดิม ไม่ต้องลบ `.env`, `init` ใหม่ หรือหยุด stack เดิม
 
 ไฟล์ Upstream คง License เดิมใน [LICENSE.supabase](LICENSE.supabase) การแก้ Gateway/Service Versions ควรยกทั้งชุดที่ผ่านการทดสอบเข้าด้วยกัน ไม่อัปเกรด Images ทีละตัวโดยไม่ตรวจ Compatibility
 

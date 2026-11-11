@@ -47,10 +47,12 @@
     "lab": "../labs/module-04-security-user-management-th.md"
   },
   "5": {
-    "file": "module-05-architecture.md",
-    "slides": 29,
-    "title": "Architecture",
-    "fundamentals": 16
+    "file": "module-05-architecture-th.md",
+    "slides": 33,
+    "title": "PostgreSQL Architecture — source Thai 5A–5G",
+    "fundamentals": 0,
+    "fundamentals_note": "Source teaches concepts inline with the 5A–5G labs",
+    "lab": "../labs/module-05-architecture.md"
   },
   "6": {
     "file": "module-06-configuration-simple.md",
@@ -65,11 +67,14 @@
     "fundamentals": 12
   },
   "8": {
-    "file": "module-08-replication-th.md",
-    "title": "Replication & HA",
+    "file": "module-08-replication.md",
+    "title": "Replication & HA — source workshop 8A–8E",
+    "thai_file": "module-08-replication-th.md",
     "english_file": "module-08-replication.md",
-    "slides": 32,
-    "fundamentals": 10
+    "slides": 21,
+    "fundamentals": 0,
+    "fundamentals_note": "Source concepts are taught inline, without separate fundamental slide tags",
+    "lab": "../labs/module-08-replication.md"
   },
   "9": {
     "file": "module-09-monitoring.md",
@@ -82,5 +87,13 @@
     "slides": 34,
     "title": "Modern PostgreSQL",
     "fundamentals": 13
+  },
+  "5:continuous": {
+    "file": "module-05-architecture-continuous.md",
+    "slides": 29,
+    "title": "Architecture — continuous case (previous version)",
+    "fundamentals": 16,
+    "variant_of": "5",
+    "lab": "../labs/module-05-architecture-continuous.md"
   }
 }

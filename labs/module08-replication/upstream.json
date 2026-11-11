@@ -1,0 +1,38 @@
+{
+  "source_project": "setup-postgres-server/postgres-admin-labs",
+  "source_slides": {
+    "module-08-replication.md": {
+      "source_relative_path": "docs/slides/module-08-replication.md",
+      "upstream_sha256": "3e7020d49131af6756fbe9dd5e09512fd492cd9c77e71cea29a45b1cb0cdbfd9",
+      "local_sha256": "ae6c351207065d8c02fa18d509fbbd3068a2a999a42f8085c3a639fe38893ca3"
+    },
+    "module-08-replication-th.md": {
+      "source_relative_path": "docs/slides/module-08-replication-th.md",
+      "upstream_sha256": "db2b166ff938cf28d4d77f8e4fd2b73657f8655d4385d90144590d9d6d139a4b",
+      "local_sha256": "cfdca3997e0142b0ce1999c957fd15ce82f1c09c266ba8feec253dd2d0a40bae"
+    }
+  },
+  "teaching_order": [
+    "8A existing replica",
+    "8B add replica2",
+    "8C stop/start and WAL retention",
+    "8D logical subscriber",
+    "8E PgBouncer transaction pooling"
+  ],
+  "adaptations": [
+    "Default MODULE=8 uses the source English deck; 8:th selects its Thai counterpart; both preserve the 21-slide teaching order.",
+    "Scoped original theme CSS to module-eight and load it through slides/setup/main.ts for direct slide URLs.",
+    "Changed source make sql-m6 typo to make sql-m8; replaced unavailable scripts/psql.sh commands with local Make targets.",
+    "Corrected Lab 8B/6C labels to 8B/8C and set concrete non-conflicting host ports 55811–55814 / 55820.",
+    "Implemented a dedicated Compose workshop with primary, replica, optional replica2/subscriber and PgBouncer; the source slide file does not supply runnable root Compose scripts.",
+    "Included minimal insurance tables matching source slide SQL; independent from continuous course data and existing classroom services.",
+    "Use layoutClass on two-cols-header so source theme applies to the layout root; cap concept images to the slide canvas and use source compact styles on the simulation table."
+  ],
+  "assets": {
+    "module-08-failover-enterprise-blue.png": "ed34486c809bb1501505332de7b0cd2f7735ee1b64d372863e6d9d4250dc8e26",
+    "module-08-lag-enterprise-blue.png": "b958193c0f0fce37462fceff0a5c37a1aa447116b4b4728e992896a0abf3b483",
+    "module-08-physical-logical-enterprise-blue.png": "0efeb46f25e78912b0700e07e37472b6a52dfe659da1cb7740473aee00d1064c",
+    "module-08-replication-cover-enterprise-blue.png": "04e131a7b65dcfaaf7e91e4bb5bcf1554713ab0b828a2be03ebba4f5b6a42a05",
+    "module-08-topology-enterprise-blue.png": "1c81bb316571bd179552a485dab6e697ee42f3f7e06c090d9e5a6dee8d01e01a"
+  }
+}

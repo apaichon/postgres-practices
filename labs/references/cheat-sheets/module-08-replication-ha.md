@@ -1,78 +1,40 @@
-# Module 8 Cheat Sheet — Replication and High Availability
+# Module 8 — Replication / HA command sheet
 
-## Mission
+[คู่มือเต็ม 8A–8E](../../module-08-replication.md) · [Compose](../../module08-replication/compose.yaml)
 
-Move WAL predictably, measure apply state, preserve application transaction semantics, and execute failover without split brain.
+รันจาก root ของ repository:
 
-## Replication lifecycle
+| หัวข้อ | คำสั่ง | หลักฐาน |
+| --- | --- | --- |
+| เตรียม | `make lab8-init` / `make lab8-config` | .env ส่วนตัวและพอร์ตว่าง |
+| 8A | `make up` / `make sql-m8` / `make lab8-verify` | primary + replica + PgBouncer, streaming และ read-only |
+| 8B | `make node-add` | replica2 และ replica2_slot, สอง physical senders |
+| 8C | `make node-down NODE=replica2` / `make lab8-wal` | slot inactive และ retained WAL |
+| 8C คืน node | `make node-up NODE=replica2` / `make lab8-verify` | replay/catch-up และ slot active |
+| 8D | `make logical-up` / `make logical-verify` | อีก cluster รับสอง published tables และ row changes |
+| 8E | `make pgbouncer` / `make pool-verify` | claim_app Login, transaction mode และ tenant RLS |
+| ตรวจบริการ | `make node-status` | Container status ของ project นี้ |
+| จบงาน | `make stop` / `make down` | หยุด services / ลบ containers แต่เก็บ volumes |
 
-```text
-prepare primary -> seed replica -> start streaming -> measure receive/flush/replay
-                -> monitor slots and retained WAL -> test node loss/recovery
-```
+เปิด admin SQL ด้วย `make psql`, `make replica`, `make replica2` หรือ `make subscriber` ใช้ `\q` ออกจาก psql
 
-## Failover lifecycle
-
-```text
-detect -> fence old primary -> choose/promote replica -> route clients
-       -> verify writes, security context, and lag -> rebuild/rejoin old node
-```
-
-Replication is data movement. High availability also requires detection, fencing, leadership, routing, verification, and rejoin.
-
-## Primary evidence
+Database `claimsure`; พอร์ต host primary 55811, replica 55812, replica2 55813, subscriber 55814, PgBouncer 55820 (ใช้ค่าจริงใน .env ถ้าเปลี่ยนแล้ว) ทุก PostgreSQL container ใช้ 5432
 
 ```sql
-SELECT application_name, client_addr, state, sync_state,
-       sent_lsn, write_lsn, flush_lsn, replay_lsn,
-       pg_size_pretty(pg_wal_lsn_diff(sent_lsn, replay_lsn)) AS replay_gap
+-- ใน make psql
+SELECT application_name, state, write_lsn, flush_lsn, replay_lsn
 FROM pg_stat_replication;
-
-SELECT slot_name, slot_type, active, restart_lsn,
-       wal_status, safe_wal_size
-FROM pg_replication_slots;
+SELECT slot_name, slot_type, active, restart_lsn, wal_status
+FROM pg_replication_slots ORDER BY slot_name;
 ```
-
-## Replica evidence
 
 ```sql
-SELECT pg_is_in_recovery(),
-       pg_last_wal_receive_lsn(),
-       pg_last_wal_replay_lsn(),
-       now() - pg_last_xact_replay_timestamp() AS replay_delay;
+-- ใน make pgbouncer: claim_app จริง
+BEGIN;
+SET LOCAL app.tenant_id = '1';
+SELECT claim_no, tenant_id FROM insurance.claim ORDER BY claim_no;
+COMMIT;
+SELECT count(*) FROM insurance.claim; -- 0: context จบพร้อม transaction
 ```
 
-No single lag number is sufficient. Distinguish send, receive, write, flush, and replay.
-
-## Decision points
-
-| Decision | Trade-off |
-| --- | --- |
-| Asynchronous commit | Lower primary latency; possible loss of unreplicated commits |
-| Synchronous commit | Lower RPO; added latency and availability dependency |
-| Physical replication | Whole-cluster binary stream; same major-version constraints |
-| Logical replication | Selected data/change stream; not a complete DR system |
-| Session pooling | Preserves session state; lower multiplexing |
-| Transaction pooling | Better multiplexing; session assumptions may break |
-
-With transaction pooling, use transaction-local context such as `SET LOCAL`; do not assume session state persists.
-
-## Analysis questions
-
-- Does the business care about receipt, durable flush, or replay visibility?
-- Can an inactive slot retain WAL until disk fills?
-- How are clients routed away from a failed primary?
-- What mechanism proves the old primary cannot accept writes?
-- Does the application tolerate the selected pool mode and read-after-write behavior?
-
-## Avoid
-
-- Calling one connected replica “HA.”
-- Promoting before fencing the old primary.
-- Measuring receive lag while ignoring replay.
-- Treating a logical publication as the backup/DR plan.
-- Depending on session GUCs or temp tables behind transaction pooling without validation.
-
-## Definition of done
-
-Streaming and replay are measured against RPO, slot retention is bounded, pool semantics are tested, and the failover drill proves fence, promote, route, verify, and rejoin.
+Physical replication ส่งทั้ง cluster; logical subscription เลือก tables และไม่คัดลอก schema/roles/sequence state ให้เอง ส่วน failover ต้องครบ detect → fence → promote → route → verify → rejoin การหยุด replica2 ใน 8C ยังไม่ใช่ primary failover

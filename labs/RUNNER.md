@@ -1,5 +1,7 @@
 # Shell runner สำหรับแล็บ ClaimSure เวอร์ชันต่อเนื่อง
 
+Module 5 ของ continuous runner อ่าน [คู่มือเดิม](module-05-architecture-continuous.md) โดยเฉพาะ ส่วน [Module 5 ตามสไลด์ต้นฉบับไทย](module-05-architecture.md) ใช้ `make lab5` และฐาน `architecture_m5_xx` แยกต่างหาก
+
 [กลับสารบัญคู่มือ](README.md)
 
 ใช้ `run-labs.sh` เลือกทั้ง module หรือขั้นตอนย่อยในบท 1–7, 9 และ 10 ได้ คำสั่ง SQL/Bash อ่านจากคู่มือ Markdown ในโฟลเดอร์นี้ โดยมี Python standard library ควบคุม session A/B/C, งานที่รอ lock และขั้น expected error ให้ตามลำดับ ไม่เรียก runner ของเวอร์ชัน fixtures เดิม

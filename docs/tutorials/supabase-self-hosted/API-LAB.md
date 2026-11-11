@@ -2,6 +2,14 @@
 
 หากต้องการใบงานแยกขั้นพร้อม Checkpoints และเกณฑ์ส่งงาน ใช้ [Supabase Labs — SB0–SB10](../../../labs/module-10-supabase.md) ซึ่งเพิ่มการ INSERT/UPDATE ด้วย curl และการคืนแถวฝึกด้วยตนเอง
 
+หากใช้ VS Code สามารถเปิด [REST Client — data-api.http](../../../labs/supabase/data-api.http) แล้วกด Send Request ทีละข้อได้ ดู [วิธีเริ่มใช้และลำดับ Login/cleanup](../../../labs/supabase/README.md#ทดสอบทีละ-request-ด้วย-vs-code-rest-client)
+
+รัน request ทั้ง 18 ข้อจากไฟล์เดียวกันด้วย Python ได้โดยใช้ `python3 labs/supabase/run_api.py` จาก root ของ repository ดู [ตัวเลือกหมายเลขนักเรียนและรายงานผล](../../../labs/supabase/README.md#รัน-api-ทั้งชุดด้วย-python-คำสั่งเดียว)
+
+เวอร์ชัน Shell ใช้ `bash labs/supabase/run_api.sh all` หรือเลือกทีละ API ด้วยหมายเลข เช่น `bash labs/supabase/run_api.sh 04` โดยเตรียม Login/แถวทดลองและ cleanup ให้เอง ดู [วิธีใช้ Shell script](../../../labs/supabase/README.md#ทดสอบทีละ-api-ด้วย-shell-script)
+
+ดูคำสั่ง curl ที่แยกเป็นไฟล์สั้น ๆ ได้ที่ [curl/ — 18 API พร้อมผลที่คาด](../../../labs/supabase/curl/README.md) และเรียกแต่ละไฟล์ได้โดยตรง เช่น `bash labs/supabase/curl/04-read-bkk.sh`
+
 **เป้าหมาย:** มี REST API สำหรับอ่าน เพิ่ม และแก้ไขข้อมูลเคลม พร้อม Login และสิทธิ์ตามผู้ใช้ โดยใช้ Table, Auth และ RLS ของ Supabase ผู้เรียนต้องเรียก API จริงและอธิบายผลที่เห็นได้
 
 เส้นทางหลักใช้เวลาประมาณ 35–45 นาทีหลังเปิดระบบ เน้น **สร้าง Table → Login → เรียก Data API → เปลี่ยนผู้เรียก → ตรวจสิทธิ์** ส่วน Storage, Realtime, Edge Functions และการดูแลระบบเป็นหัวข้อเสริม

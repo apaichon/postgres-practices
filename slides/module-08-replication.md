@@ -1,793 +1,548 @@
 ---
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cover
 theme: default
-title: "Module 8: Replication & HA"
+title: "Module 8: Replication & High Availability"
+layout: module08-cover
+class: module-eight module-cover
 colorSchema: light
 fonts:
-  sans: Noto Sans Thai
-  mono: JetBrains Mono
+  sans: Inter
+info: "PostgreSQL Developer and DBA Bootcamp v3 | Day 1"
 transition: slide-left
 mdc: true
-lang: en
-download: false
 ---
 
-<div class="cover-art"><img src="./assets/module-08-replication-cover-enterprise-blue.png" alt="Replication and HA" /></div>
 
-# Module 8<br>Replication & HA
 
-## Stream WAL · measure lag · rehearse failover
+<div class="cover-art"><img src="./assets/module-08-replication-cover-enterprise-blue.png" alt="PostgreSQL primary, replicas, pooler, logical subscriber, monitoring, and controlled failover" /></div>
 
-<footer class="cs-footer"><span>ClaimSure · Overview / preparation</span><span>1 / 32</span></footer>
+# Module 8: Replication & High Availability
+
+## Build a primary-replica ClaimSure platform without breaking transaction semantics
 
 <!--
-Speaker notes:
-Follow the numbered native lab guide. Use dedicated lab instances, record actual results, and confirm the target node before each command.
-Source: ../labs/module-08-replication.md · Overview
+Speaker notes: Mission: primary-replica claim platform, understand lag, introduce PgBouncer without breaking SET LOCAL tenant context. Replication is data movement, not a complete HA system. You still need health checks, fencing, promotion, client routing, old-primary isolation, and rejoin.
 -->
 
 ---
 layout: default
-class: continuous-deck cs-concept-deck cs-module-8
+class: module-eight
 ---
 
-# Preparation · Native instances
+# Primary, Replica, and Pooler Topology
 
-| Prerequisite | Scope |
-| --- | --- |
-| PostgreSQL 16+; example paths use 18 | Dedicated lab clusters, separate from shared claimsure_xx |
-| Single host | Primary  port 5432 / replica  port 5433 / optional replica2  port 5434 |
-| Two hosts | Consistent PRIMARY_HOST / REPLICA_HOST and HBA |
-| Access | PostgreSQL admin for config; OS postgres for cloning |
+<img src="./assets/module-08-topology-enterprise-blue.png" class="concept-visual" alt="Applications connect through a pooler to one writable primary that streams WAL to read-only replicas" />
 
-Follow native Steps 1–15; Compose 3 nodes has a separate guide and port map
-
-<footer class="cs-footer"><span>ClaimSure · Step 1–15</span><span>2 / 32</span></footer>
+<div class="concept-caption">
+  <span>Applications</span><span>Pooler</span><span>Writable primary</span><span>WAL stream</span><span>Read-only replicas</span>
+</div>
 
 <!--
-Speaker notes:
-Choose either native or Compose before starting. This deck follows labs/module-08-replication.md. Do not combine Compose ports or container commands with native data directories. The native guide uses a standalone lab_repl.canary so it does not require legacy insurance tables. Fill in all host/path variables from the actual lab allocation.
-Source: ../labs/module-08-replication.md · 1–15
+Speaker notes: Applications connect to a routing layer instead of hard-coding a database node. One primary accepts writes. PostgreSQL container ports are all 5432; the walkthrough lists separate host ports. WAL moves in one direction to read-only replicas. Health and lag checks observe each node separately.
 -->
 
 ---
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental cs-infographic
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
 ---
 
-# Steps 1–8 · Fundamental: Primary and replica
+# Primary, Replica, Pooler
 
-<img src="./assets/module-08-topology-enterprise-blue.png" class="cs-concept-visual" alt="Primary accepts writes · replica replays WAL · routing selects the endpoint" />
+::left::
 
-<p class="cs-concept-caption">Primary accepts writes · replica replays WAL · routing selects the endpoint</p>
+- Application connects to pooler :55820
+- Primary :55811 takes writes
+- Replica :55812 is read-only / DR
+- Optional replica2 :55813 supports node-add/down drills
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 1–8</span><span>3 / 32</span></footer>
-
-<!--
-Speaker notes:
-The source image shows a conceptual topology. Native single-host lab ports are 5432 and 5433, with optional 5434. A connected replica alone does not provide fencing, leader election or client routing. Keep the original image unchanged.
-Source: ../labs/module-08-replication.md · 1–8
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 1 · Confirm the primary
-
-```sql
-SELECT version();
-SELECT pg_is_in_recovery();  -- false on primary
-SHOW data_directory;
-SHOW port;
-```
-
-| Check | Expected |
-| --- | --- |
-| pg_is_in_recovery() | false |
-| directory / port | Match the assigned primary |
-| Database / role | Dedicated replication lab, admin connection |
-
-<footer class="cs-footer"><span>ClaimSure · Step 1</span><span>4 / 32</span></footer>
-
-<!--
-Speaker notes:
-Run on the intended primary. If recovery is true, this is a standby: select the writable lab node before creating objects. Check the actual cluster path and port rather than assuming the system service refers to the right instance.
-Source: ../labs/module-08-replication.md · 1
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 1 · Create a canary
-
-```sql
-CREATE SCHEMA IF NOT EXISTS lab_repl;
-CREATE TABLE IF NOT EXISTS lab_repl.canary (
-  id bigint PRIMARY KEY,
-  note text NOT NULL,
-  updated_at timestamptz NOT NULL DEFAULT clock_timestamp()
-);
-INSERT INTO lab_repl.canary (id,note) VALUES (1,'before replica')
-ON CONFLICT (id) DO UPDATE
-SET note=EXCLUDED.note,updated_at=clock_timestamp();
-```
-
-<footer class="cs-footer"><span>ClaimSure · Step 1</span><span>5 / 32</span></footer>
-
-<!--
-Speaker notes:
-Create the canary before cloning so both the schema and initial row are included in the physical base backup. This replaces the legacy insurance sample for a standalone native lab.
-Source: ../labs/module-08-replication.md · 1
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental
----
-
-# Steps 2–4 · Fundamental: Replication access
-
-<img src="./assets/module-08-access.svg" class="cs-concept-visual" alt="Inspect setting context before reload or restart" />
-
-<p class="cs-concept-caption">Inspect setting context before reload or restart</p>
-
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 2–4</span><span>6 / 32</span></footer>
-
-<!--
-Speaker notes:
-Not every setting in Step 2 requires a restart. Inspect pg_settings.context and pending_restart. Only restart the dedicated lab cluster when required; never restart a shared classroom server as part of this deck.
-Source: ../labs/module-08-replication.md · 2–4
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 2 · Configure the primary
-
-Apply the full configuration block in the guide on the **dedicated lab cluster**, then inspect:
-
-```sql
-SELECT name,setting,context,pending_restart
-FROM pg_settings
-WHERE name IN ('wal_level','max_wal_senders','max_replication_slots',
-               'wal_keep_size','hot_standby','listen_addresses')
-ORDER BY name;
-```
-
-wal_level must be replica or logical; the replica must reach the listener
-
-postmaster context needs a target-cluster restart; SIGHUP uses reload
-
-<footer class="cs-footer"><span>ClaimSure · Step 2</span><span>7 / 32</span></footer>
-
-<!--
-Speaker notes:
-The guide lists max_wal_senders=10, max_replication_slots=10 and wal_keep_size=1GB as teaching values, not production sizing. wal_level, sender/slot limits and listen_addresses have start-time contexts; inspect settings rather than declaring the entire block reloadable. Source: https://www.postgresql.org/docs/18/runtime-config-replication.html
-Source: ../labs/module-08-replication.md · 2
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Steps 3–4 · Role and HBA
-
-```sql
--- If the lab role does not already exist:
-CREATE ROLE replicator WITH REPLICATION LOGIN;
-\password replicator
-```
+::right::
 
 ```text
-host replication replicator 10.0.0.12/32 scram-sha-256
+APP TRAFFIC
+Application :55820
+    -> PgBouncer
+    -> Primary :55811
+
+WAL STREAMS
+Primary :55811
+    -> Replica :55812   read-only / DR
+    -> Replica2 :55813  optional lab
 ```
 
-For single host use `127.0.0.1/32`, then reload HBA
-
-```sql
-SELECT pg_reload_conf();
-```
-
-<footer class="cs-footer"><span>ClaimSure · Step 3–4</span><span>8 / 32</span></footer>
-
 <!--
-Speaker notes:
-The deck uses interactive psql password entry instead of the guide placeholder password. Check role existence before CREATE ROLE. Use the actual allocated replica host, not a broad CIDR. Verify authentication from the replica host using the Step 4 connection test before cloning. REPLICATION privilege must not imply application ownership or superuser.
-Source: ../labs/module-08-replication.md · 3–4
+Speaker notes: Host ports: primary 55811, replica 55812, optional replica2 55813, PgBouncer 55820. PostgreSQL uses 5432 inside every DB container; PgBouncer listens on 6432 inside its container. The guide is ../labs/module-08-replication.md (8A–8E). Do not teach applications to hard-code the primary hostname if failover is a goal. Read-your-writes on a designated synchronous standby requires configured synchronous_standby_names and remote_apply; asynchronous replicas may lag.
 -->
 
 ---
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
 ---
 
-# Steps 5 / 10–11 · Fundamental: Slots and WAL
+# Lab 8A — Existing Replica
 
-<img src="./assets/module-08-slots.svg" class="cs-concept-visual" alt="Slots retain WAL and require disk-space monitoring" />
+::left::
 
-<p class="cs-concept-caption">Slots retain WAL and require disk-space monitoring</p>
+- Restricted `replicator` role + HBA rule
+- Compose starts `replica` from `pg_basebackup`
+- Confirm `wal_level`, senders, slots, recovery state
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 5 / 10–11</span><span>9 / 32</span></footer>
-
-<!--
-Speaker notes:
-Follow the numbered native lab guide. Use dedicated lab instances, record actual results, and confirm the target node before each command.
-Source: ../labs/module-08-replication.md · 5 / 10–11
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 5 · Create a physical slot
-
-```sql
-SELECT * FROM pg_create_physical_replication_slot('replica_slot',true);
-SELECT slot_name,slot_type,active,restart_lsn
-FROM pg_replication_slots;
-```
-
-| Phase | Expected |
-| --- | --- |
-| Before replica connection | physical / active = false |
-| After streaming starts | active = true |
-
-<footer class="cs-footer"><span>ClaimSure · Step 5</span><span>10 / 32</span></footer>
-
-<!--
-Speaker notes:
-Run once on the primary after checking the slot does not already exist. One slot belongs to one replica. Reserve WAL immediately with true; keep the replica running or manage the slot lifecycle deliberately.
-Source: ../labs/module-08-replication.md · 5
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental
----
-
-# Steps 6–8 · Fundamental: Base backup and WAL
-
-<img src="./assets/module-08-clone.svg" class="cs-concept-visual" alt="Clone the same cluster, then start streaming" />
-
-<p class="cs-concept-caption">Clone the same cluster, then start streaming</p>
-
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 6–8</span><span>11 / 32</span></footer>
-
-<!--
-Speaker notes:
-Follow the numbered native lab guide. Use dedicated lab instances, record actual results, and confirm the target node before each command.
-Source: ../labs/module-08-replication.md · 6–8
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 6 · Prepare the data directory
-
-- Identify separate `PGDATA_PRIMARY` and `PGDATA_REPLICA` directories
-- Stop **only the replica instance**; keep the primary running on a shared host
-- Follow the full Step 6 preparation on the assigned replica with admin access
-- The destination must be empty or absent and writable by OS postgres
+::right::
 
 ```bash
-printf 'Replica target: %s\n' "$PGDATA_REPLICA"
-pg_ctl -D "$PGDATA_REPLICA" status
+make up
+make sql-m8
+make replica
 ```
 
-<p class="cs-takeaway">Verify the target before preparing its directory</p>
-
-<footer class="cs-footer"><span>ClaimSure · Step 6</span><span>12 / 32</span></footer>
+```sql
+-- primary
+SELECT application_name, client_addr, state,
+       sync_state, write_lsn, flush_lsn, replay_lsn
+FROM pg_stat_replication;
+-- replica
+SELECT pg_is_in_recovery(),
+       pg_last_wal_receive_lsn(),
+       pg_last_wal_replay_lsn();
+```
 
 <!--
-Speaker notes:
-pg_ctl status returning not running is expected for the stopped replica, and may report a missing directory before clone. The native guide contains directory removal commands: perform them only on the dedicated allocated replica target after verifying paths and backups. This slide deliberately delegates that full sequence to the lab guide rather than providing a shortened destructive command.
-Source: ../labs/module-08-replication.md · 6
+Speaker notes: VERIFY: primary shows a streaming walsender; replica reports pg_is_in_recovery() = true. SHOW wal_level, max_wal_senders, max_replication_slots on the primary first. hostssl replication replicator ... scram-sha-256 in production HBA. This reuses Module 4's replicator habit.
 -->
 
 ---
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
 ---
 
-# Lab Step 7 · Clone on the replica host
+# Lab 8B — Add a Replica Node
+
+::left::
+
+- Start optional `replica2` with the `ha-lab` profile
+- `replica2` clones from primary using `pg_basebackup`
+- It uses its own replication slot: `replica2_slot`
+- Verify two streaming replicas from the primary
+
+::right::
 
 ```bash
-pg_basebackup -h "$PRIMARY_HOST" -p 5432 -U replicator \
-  -D "$PGDATA_REPLICA" -Fp -Xs -P -R -S replica_slot
+make node-add
+make node-status
+make replica2
 ```
 
-| Flag | Purpose |
-| --- | --- |
-| -Fp / -Xs | Plain-format base / stream WAL during backup |
-| -R | Write standby.signal and primary_conninfo |
-| -S | Use the existing physical slot |
-
-Check standby files and set replica port = **5433** for a single host
-
-<footer class="cs-footer"><span>ClaimSure · Step 7</span><span>13 / 32</span></footer>
-
-<!--
-Speaker notes:
-Run as OS postgres on the replica host, not inside psql. PRIMARY_HOST and PGDATA_REPLICA must be set from the environment worksheet. -R writes connection information, so do not project credentials from configuration files. Configure the replica instance listener to its own port before start.
-Source: ../labs/module-08-replication.md · 7
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 8 · Start and prove streaming
-
-Start the replica with its instance-specific command; inspect the **primary**:
-
 ```sql
-SELECT application_name,state,sync_state,sent_lsn,replay_lsn
+SELECT application_name, client_addr,
+       state, sync_state, replay_lsn
 FROM pg_stat_replication;
-SELECT slot_name,active FROM pg_replication_slots;
+
+SELECT slot_name, active, restart_lsn
+FROM pg_replication_slots
+ORDER BY slot_name;
 ```
-
-**Replica**:
-
-```sql
-SELECT pg_is_in_recovery();
-SELECT status,sender_host,slot_name FROM pg_stat_wal_receiver;
-```
-
-Expect streaming / active slot and replica recovery = true
-
-<footer class="cs-footer"><span>ClaimSure · Step 8</span><span>14 / 32</span></footer>
 
 <!--
-Speaker notes:
-On a single host avoid an ambiguous systemctl start postgresql that could target multiple clusters. Use the actual replica instance manager or pg_ctl -D assigned replica path start. Query each role on its own port and label evidence with host and port.
-Source: ../labs/module-08-replication.md · 8
+Speaker notes: This lab is now supported by compose.yaml through the optional replica2 service. The default lab starts primary, replica and PgBouncer; observability is outside this exercise. Adding a node is deliberately explicit so learners can see the clone and replication slot appear.
+-->
+
+---
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
+---
+
+# Lab 8C — Take a Replica Node Down
+
+::left::
+
+- Stop `replica2`, not the primary
+- Observe it disappear from `pg_stat_replication`
+- Confirm `replica2_slot` becomes inactive
+- Restart it and watch it catch up
+
+::right::
+
+```bash
+make node-down NODE=replica2
+make node-status
+make sql-m8
+
+make node-up NODE=replica2
+make sql-m8
+```
+
+```sql
+SELECT slot_name, active,
+       pg_size_pretty(
+         pg_wal_lsn_diff(
+           pg_current_wal_lsn(), restart_lsn
+         )
+       ) AS retained_wal
+FROM pg_replication_slots
+ORDER BY slot_name;
+```
+
+<!--
+Speaker notes: This is a replica outage drill, not a primary failover. An inactive physical slot can retain WAL on the primary, so a stopped replica is also a future disk-pressure problem. Do not promote nodes in this drill.
 -->
 
 ---
 layout: default
-class: continuous-deck cs-concept-deck cs-module-8
+class: module-eight compact-table compact-code
 ---
 
-# Lab Step 9 · Write and read after replay
+# Lab 8B/8C — Simulation Steps
 
-**Primary**
+| Step | Action | Expected evidence |
+| --- | --- | --- |
+| 1 | baseline current topology | one or two streaming rows |
+| 2 | add `replica2` | new container, new slot, second stream |
+| 3 | generate WAL on primary | LSN advances |
+| 4 | stop `replica2` | stream disappears, slot inactive |
+| 5 | generate more WAL | retained WAL can grow for inactive slot |
+| 6 | start `replica2` | stream returns and replay catches up |
 
-```sql
-UPDATE lab_repl.canary
-SET note='streamed to replica',updated_at=clock_timestamp()
-WHERE id=1 RETURNING *;
+```bash
+make node-status
+make node-add
+make sql-m8
+make node-down NODE=replica2
+make sql-m8
+make node-up NODE=replica2
+make sql-m8
 ```
-
-**Replica**
-
-```sql
-SELECT * FROM lab_repl.canary WHERE id=1;
-INSERT INTO lab_repl.canary(id,note) VALUES (2,'should fail');
-```
-
-Read the new note after replay; standby INSERT must fail as read-only
-
-<footer class="cs-footer"><span>ClaimSure · Step 9</span><span>15 / 32</span></footer>
 
 <!--
-Speaker notes:
-The INSERT is an intentional error on the replica. Do not reroute it to the primary merely to make it succeed. A connected receiver is insufficient: prove row visibility after replay.
-Source: ../labs/module-08-replication.md · 9
+Speaker notes: Run this as a controlled outage simulation. The target is replica2 only. The point is to see the difference between a streaming replica row and a physical replication slot. A stopped replica can disappear from pg_stat_replication while its slot remains and retains WAL.
+-->
+
+---
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
+---
+
+# Lab 8C Detail — Generate WAL While Down
+
+::left::
+
+**After stopping `replica2`**
+
+- write a small audit batch on the primary
+- inspect `replica2_slot`
+- compare retained WAL before and after
+- restart the node and verify catch-up
+
+::right::
+
+```sql
+INSERT INTO insurance.audit_event (
+  tenant_id, actor, action,
+  entity_type, entity_id, details
+)
+SELECT 1, 'ha_lab', 'NODE_DOWN_WAL',
+       'replica2', g::text,
+       jsonb_build_object('lab', '8C')
+FROM generate_series(1, 1000) g;
+
+SELECT slot_name, active,
+       pg_size_pretty(
+         pg_wal_lsn_diff(
+           pg_current_wal_lsn(), restart_lsn
+         )
+       ) AS retained_wal
+FROM pg_replication_slots
+ORDER BY slot_name;
+```
+
+<!--
+Speaker notes: This small write batch makes the retained-WAL behavior easier to see. If retained_wal stays small, that is also valid evidence: the workload was small or the replica caught up quickly after restart. The operational risk remains the same for a long outage with a high-write primary.
 -->
 
 ---
 layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental cs-infographic
+class: module-eight
 ---
 
-# Step 10 · Fundamental: Write / flush / replay
+# Replication Lag Stages
 
-<img src="./assets/module-08-lag-enterprise-blue.png" class="cs-concept-visual" alt="Receive, write, durable flush and replay are different WAL positions" />
+<img src="./assets/module-08-lag-enterprise-blue.png" class="concept-visual" alt="WAL generation, network transfer, replica write, flush, replay, and inactive slot retention" />
 
-<p class="cs-concept-caption">Receive, write, durable flush and replay are different WAL positions</p>
-
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 10</span><span>16 / 32</span></footer>
+<div class="concept-caption">
+  <span>Generate</span><span>Send</span><span>Write</span><span>Flush</span><span>Replay</span><span>Slot retention</span>
+</div>
 
 <!--
-Speaker notes:
-Source image illustrates stages. PostgreSQL write_lag/flush_lag/replay_lag report measured feedback delays for recent WAL, not predicted catch-up time. On an idle caught-up system these timing fields can be NULL; replay timestamp age can grow just because there are no new transactions. Cross-check LSN gaps and a canary. Source: https://www.postgresql.org/docs/18/monitoring-stats.html
-Source: ../labs/module-08-replication.md · 10
+Speaker notes: Lag exists at several boundaries. A replica may receive WAL before it writes, flushes, or replays it. Only replay changes the visible standby data. An inactive slot retains WAL on the primary and creates a separate disk-capacity risk.
 -->
 
 ---
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
 ---
 
-# Lab Step 10 · Measure lag with several signals
+# Lag Is Not One Number
+
+::left::
+
+- Write lag, flush lag, replay lag
+- Byte lag vs time lag
+- Slot retention can fill `pg_wal`
+
+::right::
 
 ```sql
-SELECT application_name,write_lag,flush_lag,replay_lag,
-       pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),replay_lsn))
-         AS replay_byte_lag
+SELECT application_name,
+  pg_size_pretty(pg_wal_lsn_diff(
+    pg_current_wal_lsn(), replay_lsn))
+    AS replay_byte_lag,
+  write_lag, flush_lag, replay_lag
 FROM pg_stat_replication;
 ```
 
-- Inspect on primary and compare with the replica canary
-- Timing lag is measured feedback delay, not predicted catch-up time
-- Idle timing fields may be NULL; an old timestamp alone is not backlog
-- Compare measured evidence with RPO before selecting a promotion target
-
-<footer class="cs-footer"><span>ClaimSure · Step 10</span><span>17 / 32</span></footer>
-
 <!--
-Speaker notes:
-pg_wal_lsn_diff compares WAL positions in bytes. Write/flush/replay timing columns and byte gaps answer different questions. Do not call async streaming near-zero RPO without a measured failure scenario. Source: https://www.postgresql.org/docs/18/monitoring-stats.html
-Source: ../labs/module-08-replication.md · 10
+Speaker notes: A replica that received WAL but has not replayed it is a DR lie. Byte lag compared to RPO becomes an alert in Module 9. Long-idle replication slots are a disk-full incident waiting to happen.
 -->
 
 ---
 layout: default
-class: continuous-deck cs-concept-deck cs-module-8
+class: module-eight
 ---
 
-# Lab Step 10 · Inspect retained WAL
+# Commit Modes
 
-```sql
-SELECT slot_name,active,
-       pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_lsn))
-         AS retained_wal
-FROM pg_replication_slots ORDER BY slot_name;
-```
-
-A stopped replica disappears from pg_stat_replication while its slot retains WAL
-
-Monitor disk and slot lifecycle; drop only a retired replica's slot after
-confirming that no consumer still needs that retained WAL
-
-<footer class="cs-footer"><span>ClaimSure · Step 10</span><span>18 / 32</span></footer>
+| Mode                     | Commit behavior              | Trade-off                              |
+| ------------------------ | ---------------------------- | -------------------------------------- |
+| Asynchronous             | Primary need not wait        | Possible recent TX loss on failover    |
+| Synchronous remote write | Wait for remote OS write     | Lower loss, adds network latency       |
+| Synchronous remote apply | Wait until replayed          | Strong standby reads, highest latency  |
 
 <!--
-Speaker notes:
-Do not drop replica_slot during the active exercise. A slot retention limit can eventually invalidate a lagging consumer, so slots do not promise unlimited recovery time. Record active state and retained bytes before and after the node-down drill.
-Source: ../labs/module-08-replication.md · 10
+Speaker notes: ClaimSure payments may justify sync write; a reporting replica may not. Name the RPO implication. FAILOVER reminder: lag graphs do not promote a node. Promotion without fencing the old primary is split-brain.
 -->
 
 ---
 layout: default
-class: continuous-deck cs-concept-deck cs-module-8
+class: module-eight
 ---
 
-# Lab Step 11 · Optional: Second replica
+# Physical and Logical Replication
 
-1. Repeat Steps 5–8 with `replica2_slot`, a new directory and port **5434**
-2. Confirm two streaming rows and two physical slots on primary
-3. Record baseline, then stop only replica2
-4. Generate WAL; inspect its inactive slot and retained WAL
-5. Restart replica2 and prove replay catches up
+<img src="./assets/module-08-physical-logical-enterprise-blue.png" class="concept-visual" alt="Physical WAL replication mirrors a cluster while logical replication selects published tables" />
 
-<p class="cs-takeaway">This is a node-down / catch-up drill; do not promote here</p>
-
-<footer class="cs-footer"><span>ClaimSure · Step 11</span><span>19 / 32</span></footer>
+<div class="concept-caption">
+  <span>Physical WAL stream</span><span>Whole-cluster replica</span><span>Logical decoding</span><span>Selected tables</span><span>Separate subscriber</span>
+</div>
 
 <!--
-Speaker notes:
-Use an independent data directory, port and slot. This optional drill tests retention and catch-up, not fencing or failover. Keep primary writable and replica1 connected throughout the test.
-Source: ../labs/module-08-replication.md · 11
+Speaker notes: Physical streaming reproduces the complete cluster at the storage level and supports standby recovery. Logical replication selects published tables and applies row changes to a separate subscriber. Roles, sequence state, and schema changes need separate handling.
 -->
 
 ---
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
 ---
 
-# Step 12 · Fundamental: Commit acknowledgment
+# Lab 8D — Logical Replication
 
-<img src="./assets/module-08-commit-modes.svg" class="cs-concept-visual" alt="Sync requires matching synchronous_standby_names and application_name" />
+::left::
 
-<p class="cs-concept-caption">Sync requires matching synchronous_standby_names and application_name</p>
+- Use: selective tables, upgrades, integration
+- Not: complete cluster DR
+- Needs `wal_level=logical` and slots
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 12</span><span>20 / 32</span></footer>
-
-<!--
-Speaker notes:
-The three sync rows assume a selected synchronous standby. With empty synchronous_standby_names, non-off modes provide local flush only. remote_write does not guarantee survival of a standby OS crash; on waits for durable flush. This clarifies imprecise wording in the course guide. Source: https://www.postgresql.org/docs/18/runtime-config-wal.html
-Source: ../labs/module-08-replication.md · 12
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 12 · Select a synchronous standby
-
-```sql
-ALTER SYSTEM SET synchronous_standby_names='FIRST 1 (replica)';
-ALTER SYSTEM SET synchronous_commit='on';
-SELECT pg_reload_conf();
-SHOW synchronous_commit;
-SHOW synchronous_standby_names;
-SELECT application_name,sync_state FROM pg_stat_replication;
-```
+::right::
 
 ```text
-primary_conninfo = 'host=10.0.0.11 port=5432 user=replicator application_name=replica'
+Publisher tables
+      → WAL logical decoding
+      → publication
+      → subscription
+      → subscriber tables
 ```
-
-<footer class="cs-footer"><span>ClaimSure · Step 12</span><span>21 / 32</span></footer>
-
-<!--
-Speaker notes:
-Dedicated lab cluster only. Replace example host with the actual primary. The replica connection application_name must be replica and sync_state must become sync. Verify a healthy standby before enabling the requirement; commits can wait when the required synchronous standby is unavailable. Restore the allocated lab baseline when ending this optional mode experiment.
-Source: ../labs/module-08-replication.md · 12
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental cs-infographic
----
-
-# Step 13 · Fundamental: Failover and HA
-
-<img src="./assets/module-08-failover-enterprise-blue.png" class="cs-concept-visual" alt="Fence before promotion · reroute · verify writes · rejoin as standby" />
-
-<p class="cs-concept-caption">Fence before promotion · reroute · verify writes · rejoin as standby</p>
-
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 13a–f</span><span>22 / 32</span></footer>
-
-<!--
-Speaker notes:
-This is a planned drill on dedicated nodes. Replication does not elect a leader or change client routing automatically. Fence means guaranteeing the old node cannot accept commits, not merely observing a failed health check.
-Source: ../labs/module-08-replication.md · 13a–f
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental
----
-
-# Step 13 · Fundamental: Failover sequence
-
-<img src="./assets/module-08-failover-sequence.svg" class="cs-concept-visual" alt="Connected replica ≠ HA · two writable nodes cause split-brain" />
-
-<p class="cs-concept-caption">Connected replica ≠ HA · two writable nodes cause split-brain</p>
-
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 13a–f</span><span>23 / 32</span></footer>
-
-<!--
-Speaker notes:
-Follow the numbered native lab guide. Use dedicated lab instances, record actual results, and confirm the target node before each command.
-Source: ../labs/module-08-replication.md · 13a–f
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Steps 13a–b · Detect and fence
-
-- Record the old primary, intended survivor and replay evidence against RPO
-- Guarantee the old primary **cannot commit** before promotion
-- Use the lab's instance-stop or write-fencing procedure
-- On a single host, stop only the old primary, keeping the survivor running
-- Record evidence that the old write endpoint cannot accept writes
-
-<p class="cs-takeaway">Use identified lab nodes with a prepared rejoin plan</p>
-
-<footer class="cs-footer"><span>ClaimSure · Step 13a–b</span><span>24 / 32</span></footer>
-
-<!--
-Speaker notes:
-An unreachable node is not proof it has stopped committing. Fence with a method appropriate to the dedicated topology. The deck avoids an ambiguous systemctl command because it may stop both instances on a single host. Do not proceed to promotion until fencing is verified.
-Source: ../labs/module-08-replication.md · 13a–b
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 13c · Promote the survivor
-
-```sql
-SELECT pg_promote();
-SELECT pg_is_in_recovery();  -- false after promotion
-SHOW transaction_read_only; -- off
-```
-
-Run on the chosen survivor only after verified fencing
-
-Record host/port and promotion time; promotion does not change its port
-
-A replica on  port 5433 stays on  port 5433 until listener/routing is reconfigured
-
-<footer class="cs-footer"><span>ClaimSure · Step 13c</span><span>25 / 32</span></footer>
-
-<!--
-Speaker notes:
-Do not hard-code new primary port 5432 merely because the role changed. The native single-host survivor normally still listens on 5433. Update the pooler backend to the actual survivor address and port.
-Source: ../labs/module-08-replication.md · 13c
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Steps 13d–e · Route and verify writes
-
-Point the pooler/VIP to the **actual new primary host:port**, then use the client endpoint:
-
-```sql
-INSERT INTO lab_repl.canary(id,note) VALUES (3,'after promote')
-ON CONFLICT(id) DO UPDATE
-SET note=EXCLUDED.note,updated_at=clock_timestamp()
-RETURNING *;
-SELECT inet_server_addr(),inet_server_port(),pg_is_in_recovery(),
-       current_setting('transaction_read_only');
-```
-
-Confirm write success, recovery=false, read_only=off and the fenced old endpoint
-
-<footer class="cs-footer"><span>ClaimSure · Step 13d–e</span><span>26 / 32</span></footer>
-
-<!--
-Speaker notes:
-Checking localhost on the promoted node does not prove the application route changed. Run verification through the client write endpoint. If application RLS is configured, separately verify the security context through the pooler as in Step 15.
-Source: ../labs/module-08-replication.md · 13d–e
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 13f · Rejoin the former primary
-
-1. Keep fencing in place; the old data directory may have diverged
-2. Preferred lab path: **fresh base backup** from the new primary
-3. Use a new slot, standby.signal and primary_conninfo for the new primary
-4. Start in recovery and verify streaming from both nodes
-
-```sql
-SELECT application_name,state,replay_lsn
-FROM pg_stat_replication;
-```
-
-pg_rewind is an alternative with prerequisites; never reopen the old node as primary
-
-<footer class="cs-footer"><span>ClaimSure · Step 13f</span><span>27 / 32</span></footer>
-
-<!--
-Speaker notes:
-The native guide recommends a fresh base backup for the lab. pg_rewind has additional prerequisites including checksums or wal_log_hints enabled before divergence and full_page_writes on; do not treat it as an unconditional replacement for a rebuild. Keep the old node isolated until it is configured as a standby and rejoin is verified.
-Source: ../labs/module-08-replication.md · 13f
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental cs-infographic
----
-
-# Step 14 · Fundamental: Physical / logical
-
-<img src="./assets/module-08-physical-logical-enterprise-blue.png" class="cs-concept-visual" alt="Physical is a cluster standby · logical selects tables for a separate subscriber" />
-
-<p class="cs-concept-caption">Physical is a cluster standby · logical selects tables for a separate subscriber</p>
-
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 14</span><span>28 / 32</span></footer>
-
-<!--
-Speaker notes:
-Logical replication does not automatically copy roles, sequences or schema DDL. A publication is not a promotable physical disaster-recovery cluster. The legacy guide example insurance.claim is replaced by the native canary in this deck so it can run without legacy schemas.
-Source: ../labs/module-08-replication.md · 14
--->
-
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 14 · Optional: Publication
-
-With `wal_level = logical` and the required table privileges:
 
 ```sql
 CREATE PUBLICATION claims_reporting
-FOR TABLE lab_repl.canary;
+  FOR TABLE insurance.claim,
+            insurance.claim_payment;
 ```
 
-- Use the existing canary instead of legacy insurance.claim
-- Prepare matching table DDL on the subscriber before subscription
-- A publication alone does not create a subscriber or start delivery
-- Keep physical standby for failover; DDL/roles/sequences do not copy automatically
-
-<footer class="cs-footer"><span>ClaimSure · Step 14</span><span>29 / 32</span></footer>
-
 <!--
-Speaker notes:
-Optional concept exercise adapted to the native canary. If the cluster remains wal_level=replica, skip publication rather than restart shared infrastructure. Subscriber creation is outside this short Step 14 example; report publication creation separately from end-to-end logical replication.
-Source: ../labs/module-08-replication.md · 14
+Speaker notes: Run make logical-up, then make logical-verify for a separate subscriber. Subscriber tables must be pre-created. Sequences, roles, and DDL are not magically replicated. Apply wal_level=logical through the restart workflow from Module 6. Physical replica remains the DR path.
 -->
 
 ---
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8 cs-fundamental
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
 ---
 
-# Step 15 · Fundamental: Transaction pooling
+# Lab 8E — PgBouncer Pool Modes
 
-<img src="./assets/module-08-pool-context.svg" class="cs-concept-visual" alt="Test routing and security context through the pooler after failover" />
+::left::
 
-<p class="cs-concept-caption">Test routing and security context through the pooler after failover</p>
+- session: released at disconnect
+- transaction: preferred for many apps
+- statement: breaks multi-statement TX
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental before Step 15</span><span>30 / 32</span></footer>
+::right::
 
-<!--
-Speaker notes:
-Context must come from a trusted identity boundary. A custom GUC is a context value, not token verification. Tenant/RLS examples require the corresponding application roles and policies; the native canary alone does not prove tenant isolation.
-Source: ../labs/module-08-replication.md · 15
--->
+```ini
+[databases]
+claimsure = host=primary port=5432 dbname=claimsure
 
----
-layout: default
-class: continuous-deck cs-concept-deck cs-module-8
----
-
-# Lab Step 15 · Pool mode and context
-
-```sql
-BEGIN;
-SET LOCAL app.tenant_id='1';
-SELECT current_setting('app.tenant_id',true);
--- Run an application query only if its RLS is configured.
-COMMIT;
+[pgbouncer]
+listen_port = 6432
+pool_mode = transaction
+max_client_conn = 1000
+default_pool_size = 40
+reserve_pool_size = 10
 ```
 
-- Context simulation; the canary has no preconfigured tenant RLS
-- In transaction pooling, use SET LOCAL inside the transaction
-- After failover, update the backend and retest writes/context
-- Test session state, temp tables and prepared statements for your pooler/version
-
-<footer class="cs-footer"><span>ClaimSure · Step 15</span><span>31 / 32</span></footer>
-
 <!--
-Speaker notes:
-Do not claim this arbitrary tenant ID was authenticated or that selecting current_setting proves row isolation. It demonstrates transaction-local scope. Real application RLS tests need roles, policies and validated identity injection. Prepared-statement support depends on pooler configuration and version; avoid categorical claims.
-Source: ../labs/module-08-replication.md · 15
+Speaker notes: Run make pool-verify to verify a real claim_app login and tenant RLS. APPLICATION RULE: with transaction pooling, use SET LOCAL inside a transaction for tenant context. Do not depend on session-scoped temp tables or prepared statements without checking PgBouncer and driver behavior. This is why Lab 3B used SET LOCAL, not SET.
 -->
 
 ---
 layout: default
-class: continuous-deck cs-concept-deck cs-module-8
+class: module-eight
 ---
 
-# Steps 1–15 · Completion evidence
+# Controlled Failover Sequence
 
-| Guide | Required evidence |
-| --- | --- |
-| 1–8 | Correct primary, active slot, replica recovery=true and streaming |
-| 9–11 | Replayed canary, rejected standby write, lag and retained WAL |
-| 12 | Commit mode and sync_state match the RPO requirement |
-| 13a–f | Fence → promote → route → verify → rejoin, with time/host/port |
-| 14–15 | Physical/logical scope and pooler/context verification |
+<img src="./assets/module-08-failover-enterprise-blue.png" class="concept-visual" alt="Detect failure, fence the old primary, promote a replica, reroute clients, verify, and rejoin" />
 
-Record skipped optional work and reasons; retain clusters per the instructor's plan
-
-<footer class="cs-footer"><span>ClaimSure · Step 1–15</span><span>32 / 32</span></footer>
+<div class="concept-caption">
+  <span>Detect</span><span>Fence</span><span>Promote</span><span>Route</span><span>Verify</span><span>Rejoin</span>
+</div>
 
 <!--
-Speaker notes:
-Keep native Step numbering visible throughout the deck; do not label these steps 8A–8E, which refer to a different runner. The course can continue to module 9 in the original claimsure_xx environment; replication lab clusters are separate.
-Source: ../labs/module-08-replication.md · 1–15
+Speaker notes: Fencing must prevent the old primary from accepting writes before another node becomes writable. Promotion changes the replica role. Client routing then moves to the new primary, followed by verification and a controlled rebuild of the former primary as a replica.
 -->
 
+---
+layout: default
+class: module-eight
+---
+
+# Failover Is a Procedure
+
+- Health checks and leader election / fencing
+- Promote replica, isolate old primary
+- Repoint pooler / clients
+- Rejoin former primary as replica
+- Prove writes, RLS context, and lag after cutover
+
+```text
+detect → fence → promote → route → verify → rejoin
+```
+
+<!--
+Speaker notes: Replication is data movement, not HA. Patroni/HAProxy may appear in production designs; the lab must still name these steps. Capstone scoring includes promotion, fencing, routing, and rejoin — not just pg_is_in_recovery().
+-->
+
+---
+layout: default
+class: module-eight
+---
+
+# Module 8 Checkpoint
+
+- Streaming walsender visible; replica in recovery
+- Optional replica2 can be added, stopped, and restarted
+- Team can interpret write vs flush vs replay lag
+- Team can explain inactive slot WAL retention
+- Logical publication is not the DR plan
+- Transaction pooling + SET LOCAL tenant context
+- Failover runbook has fence, route, verify, rejoin
+
+<!--
+Speaker notes: Verify SET LOCAL inside each transaction; RLS also applies with session pooling, but transaction pooling cannot rely on session state. If they only cloned with pg_basebackup and never measured lag, they are not done. Next: operate by symptoms — slow SQL, locks, deadlocks, disk, lag.
+-->
+
+---
+layout: default
+class: module-eight
+---
+
+# Failure Modes
+
+- Calling a connected replica "HA" with no fencing
+- Measuring receive lag but ignoring replay
+- Stopped replica slot retaining unbounded WAL
+- Logical publication as the DR plan
+- Session GUCs and temp tables behind transaction pooling
+
+```text
+streaming ≠ failover    receive ≠ replay
+```
+
+<!--
+Speaker notes: Idle replication slots fill pg_wal. Promoting without isolating the old primary is split-brain. SET versus SET LOCAL is the Module 4 tenant-context lesson again.
+-->
+
+---
+layout: two-cols-header
+class: module-eight
+layoutClass: module-eight
+---
+
+# Production Checklist
+
+::left::
+
+- `pg_stat_replication` shows streaming; replica in recovery
+- Node-add/down drill records slot behavior
+- Replay byte/time lag compared to RPO
+- Failover runbook: detect, fence, promote, route, verify, rejoin
+- PgBouncer transaction mode + SET LOCAL tenant context
+- Logical replication used only for its stated scope
+
+::right::
+
+```text
+clone ✓  stream ✓  lag ✓
+pool semantics ✓  runbook ✓
+```
+
+<!--
+Speaker notes: Clients use pooler host port 55820 (container 6432), not a node hostname, if failover is in scope. wal_level=logical is a restart change if they need publications later.
+-->
+
+---
+layout: default
+class: module-eight
+---
+
+# Decision Scenario
+
+> Payment writes must survive primary loss; reporting can lag 30 seconds. Which commit mode, and what do you still have to build besides replication?
+
+```text
+sync write for payments? → latency cost
+still need: fence, promote, route, rejoin
+```
+
+<!--
+Speaker notes: Asynchronous replica is not "near zero RPO." Synchronous remote write waits for OS write, not apply. They must still name the control plane. No vendor name required — the steps are.
+-->
+
+---
+layout: default
+class: module-eight
+---
+
+# Module 8 Recap
+
+- Replica is WAL movement, not automatic HA
+- Measure replay, not just "connected"
+- Logical ≠ DR
+- Pool mode is a transaction-semantics choice
+
+<!--
+Speaker notes: Close by repeating the mission. Module 9 incident drill will include a replica 4 GB behind during a settlement batch — they will need today's lag query.
+-->

@@ -34,7 +34,7 @@ FILES = {n: DOCS / filename for n, filename in {
     2: "module-02-advanced-sql.md",
     3: "module-03-performance-tuning.md",
     4: "module-04-security.md",
-    5: "module-05-architecture.md",
+    5: "module-05-architecture-continuous.md",
     6: "module-06-configuration.md",
     7: "module-07-backup-recovery.md",
     9: "module-09-monitoring.md",

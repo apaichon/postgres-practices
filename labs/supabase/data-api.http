@@ -1,0 +1,196 @@
+# Supabase Data API + Auth — VS Code extension: humao.rest-client
+# เริ่มจาก root ของ repo: bash labs/docker-labs.sh 10 seed
+# เปิดไฟล์นี้แล้วกด Send Request ทีละข้อ ตามลำดับ 01–18
+# แทน xx ใน studentNo ด้วยเลขสองหลักของตนก่อนเพิ่มแถวทดลอง
+# อ่าน URL/credentials จาก .env ในโฟลเดอร์เดียวกัน; ไม่ต้องคัดลอก secrets
+# ถ้า Docker อยู่บน server ใช้ VS Code Remote-SSH เปิดสำเนาของตนบน server
+# Login 02/03 ก่อนเรียก request ที่อ้าง response; token หมดอายุให้ Login ใหม่
+# ขั้น 09 เพิ่มแถวทดลอง; ขั้น 17 ลบเฉพาะ ID/Owner/claim_no ที่ขั้น 09 คืนมา
+
+@studentNo = xx
+@baseUrl = {{$dotenv SUPABASE_PUBLIC_URL}}
+@anonKey = {{$dotenv ANON_KEY}}
+@serviceRoleKey = {{$dotenv SERVICE_ROLE_KEY}}
+
+### 01 — anon ยังไม่ Login: เรียก endpoint ได้ แต่ RLS ไม่ให้เห็นแถว
+# EXPECT: HTTP 200, []
+# @name readAnonymous
+GET {{baseUrl}}/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no
+apikey: {{anonKey}}
+Authorization: Bearer {{anonKey}}
+
+### 02 — Login BKK: response มี access_token และ user.id ให้ request ถัดไปใช้
+# EXPECT: HTTP 200
+# @name loginBkk
+POST {{baseUrl}}/auth/v1/token?grant_type=password
+apikey: {{anonKey}}
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv DEMO_BKK_EMAIL}}",
+  "password": "{{$dotenv DEMO_PASSWORD}}"
+}
+
+### 03 — Login CM: เป็น authenticated เช่นกัน แต่เป็นคนละ user
+# EXPECT: HTTP 200
+# @name loginCm
+POST {{baseUrl}}/auth/v1/token?grant_type=password
+apikey: {{anonKey}}
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv DEMO_CM_EMAIL}}",
+  "password": "{{$dotenv DEMO_PASSWORD}}"
+}
+
+### 04 — BKK อ่าน endpoint เดิม: เห็นเฉพาะเคลมที่ตนเป็นเจ้าของ
+# EXPECT: HTTP 200, CLM-BKK-001 และ CLM-BKK-002 หลัง seed
+# @name readBkk
+GET {{baseUrl}}/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no
+apikey: {{anonKey}}
+Authorization: Bearer {{loginBkk.response.body.$.access_token}}
+
+### 05 — CM อ่าน endpoint เดิม: เปลี่ยนเฉพาะ Bearer Token แล้วได้คนละแถว
+# EXPECT: HTTP 200, CLM-CM-001 และ CLM-CM-002 หลัง seed
+# @name readCm
+GET {{baseUrl}}/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no
+apikey: {{anonKey}}
+Authorization: Bearer {{loginCm.response.body.$.access_token}}
+
+### 06 — BKK ใส่ filter ขอเคลม CM: filter ข้าม RLS ไม่ได้
+# EXPECT: HTTP 200, []
+# @name readOtherOwner
+GET {{baseUrl}}/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&branch=eq.CM
+apikey: {{anonKey}}
+Authorization: Bearer {{loginBkk.response.body.$.access_token}}
+
+### 07 — Token ไม่ถูกต้อง: ต่างจาก anon ที่ได้ []
+# EXPECT: HTTP 401
+# @name invalidToken
+GET {{baseUrl}}/rest/v1/claimsure_claims?select=claim_no
+apikey: {{anonKey}}
+Authorization: Bearer invalid-token
+
+### 08 — Password ผิด: Auth ไม่ออก user token ให้
+# EXPECT: HTTP 400/401
+# @name wrongPassword
+POST {{baseUrl}}/auth/v1/token?grant_type=password
+apikey: {{anonKey}}
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv DEMO_BKK_EMAIL}}",
+  "password": "intentionally-wrong-workshop-password"
+}
+
+### 09 — BKK เพิ่มเคลมของตน: UUID ใน claim_no ทำให้รันซ้ำไม่ชนชื่อ
+# EXPECT: HTTP 201, array มีแถวใหม่พร้อม id
+# รัน 10–17 ให้จบก่อนส่ง 09 ซ้ำ เพื่อเก็บ ID สำหรับ cleanup ของแต่ละรอบ
+# @name createClaim
+POST {{baseUrl}}/rest/v1/claimsure_claims
+apikey: {{anonKey}}
+Authorization: Bearer {{loginBkk.response.body.$.access_token}}
+Content-Type: application/json
+Prefer: return=representation
+
+{
+  "claim_no": "CLM-REST_{{studentNo}}-{{$guid}}",
+  "branch": "BKK",
+  "adjuster_id": "{{loginBkk.response.body.$.user.id}}",
+  "amount": 1500,
+  "status": "NEW"
+}
+
+### 10 — BKK อ่านแถวที่เพิ่งเพิ่ม โดยใช้ id จาก response ของ 09
+# EXPECT: HTTP 200, array มี 1 แถว status NEW
+# @name readCreatedClaim
+GET {{baseUrl}}/rest/v1/claimsure_claims?id=eq.{{createClaim.response.body.$[0].id}}&select=id,claim_no,branch,amount,status
+apikey: {{anonKey}}
+Authorization: Bearer {{loginBkk.response.body.$.access_token}}
+
+### 11 — CM ระบุ id เดียวกัน: ยังอ่านเคลมของ BKK ไม่ได้
+# EXPECT: HTTP 200, []
+# @name cmReadsBkkClaim
+GET {{baseUrl}}/rest/v1/claimsure_claims?id=eq.{{createClaim.response.body.$[0].id}}&select=claim_no,branch,status
+apikey: {{anonKey}}
+Authorization: Bearer {{loginCm.response.body.$.access_token}}
+
+### 12 — BKK แก้ status ของเคลมตน
+# EXPECT: HTTP 200, array มี 1 แถว status REVIEW
+# @name updateOwnClaim
+PATCH {{baseUrl}}/rest/v1/claimsure_claims?id=eq.{{createClaim.response.body.$[0].id}}
+apikey: {{anonKey}}
+Authorization: Bearer {{loginBkk.response.body.$.access_token}}
+Content-Type: application/json
+Prefer: return=representation
+
+{
+  "status": "REVIEW"
+}
+
+### 13 — BKK โอนเจ้าของให้ CM: WITH CHECK ต้องปฏิเสธ
+# EXPECT: HTTP 403, SQLSTATE 42501
+# @name rejectOwnerTransfer
+PATCH {{baseUrl}}/rest/v1/claimsure_claims?id=eq.{{createClaim.response.body.$[0].id}}
+apikey: {{anonKey}}
+Authorization: Bearer {{loginBkk.response.body.$.access_token}}
+Content-Type: application/json
+Prefer: return=representation
+
+{
+  "adjuster_id": "{{loginCm.response.body.$.user.id}}"
+}
+
+### 14 — BKK เพิ่มเคลมโดยใส่เจ้าของเป็น CM: WITH CHECK ต้องปฏิเสธ
+# EXPECT: HTTP 403, SQLSTATE 42501
+# @name rejectOtherOwnerInsert
+POST {{baseUrl}}/rest/v1/claimsure_claims
+apikey: {{anonKey}}
+Authorization: Bearer {{loginBkk.response.body.$.access_token}}
+Content-Type: application/json
+Prefer: return=representation
+
+{
+  "claim_no": "CLM-REST-REJECT_{{studentNo}}-{{$guid}}",
+  "branch": "CM",
+  "adjuster_id": "{{loginCm.response.body.$.user.id}}",
+  "amount": 1,
+  "status": "NEW"
+}
+
+### 15 — CM พยายามแก้แถวของ BKK: USING กรองแถวที่ไม่มีสิทธิ์ออก
+# EXPECT: HTTP 200, []; ไม่ได้แปลว่าแก้ข้อมูลสำเร็จ
+# @name cmUpdatesBkkClaim
+PATCH {{baseUrl}}/rest/v1/claimsure_claims?id=eq.{{createClaim.response.body.$[0].id}}
+apikey: {{anonKey}}
+Authorization: Bearer {{loginCm.response.body.$.access_token}}
+Content-Type: application/json
+Prefer: return=representation
+
+{
+  "status": "APPROVED"
+}
+
+### 16 — BKK ยืนยันว่า status และ Owner ของแถวทดลองยังเป็นของเดิม
+# EXPECT: HTTP 200, 1 แถว status REVIEW; adjuster_id ตรง user.id ของ loginBkk
+# @name confirmClaimUnchanged
+GET {{baseUrl}}/rest/v1/claimsure_claims?id=eq.{{createClaim.response.body.$[0].id}}&select=id,claim_no,adjuster_id,status
+apikey: {{anonKey}}
+Authorization: Bearer {{loginBkk.response.body.$.access_token}}
+
+### 17 — ผู้สอน/backend ลบเฉพาะแถวทดลองจาก 09
+# EXPECT: HTTP 200, array มีแถวที่ถูกลบ 1 แถว; ส่งซ้ำได้ []
+# authenticated ใน Lab นี้ไม่มี DELETE grant จึงใช้ service_role สำหรับ cleanup
+# service_role ข้าม RLS ได้ ใช้เฉพาะเครื่องมือผู้สอน/backend
+# @name cleanupClaim
+DELETE {{baseUrl}}/rest/v1/claimsure_claims?id=eq.{{createClaim.response.body.$[0].id}}&adjuster_id=eq.{{loginBkk.response.body.$.user.id}}&claim_no=eq.{{createClaim.response.body.$[0].claim_no}}
+apikey: {{serviceRoleKey}}
+Authorization: Bearer {{serviceRoleKey}}
+Prefer: return=representation
+
+### 18 — ผู้สอน/backend อ่านทุกเจ้าของ เพื่อเทียบกับ 01/04/05
+# EXPECT: HTTP 200, เห็น BKK และ CM; ข้อมูลตั้งต้น 4 แถวเมื่อ cleanup แล้ว
+# @name readServiceRole
+GET {{baseUrl}}/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no
+apikey: {{serviceRoleKey}}
+Authorization: Bearer {{serviceRoleKey}}

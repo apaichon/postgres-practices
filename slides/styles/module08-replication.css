@@ -1,0 +1,138 @@
+/* Imported Module 8 source theme, scoped for shared Slidev setup. */
+.slidev-layout.module-eight {
+  background: #fbfdff;
+  color: #18395f;
+  padding: 2.8rem 3.5rem;
+  border-top: 6px solid #43b7ef;
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+.slidev-layout.module-eight h1 {
+  color: #0b356b;
+  font-size: 2.2rem;
+  font-weight: 720;
+  line-height: 1.12;
+  margin-bottom: 1.15rem;
+  letter-spacing: 0;
+}
+.slidev-layout.module-eight h2,
+.slidev-layout.module-eight h3 { color: #15599a; letter-spacing: 0; }
+.slidev-layout.module-eight strong { color: #0b356b; }
+.slidev-layout.module-eight a { color: #147dc1; }
+.slidev-layout.module-eight ul,
+.slidev-layout.module-eight ol { margin-top: 0.65rem; }
+.slidev-layout.module-eight li { margin-bottom: 0.34rem; }
+.slidev-layout.module-eight table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid #78cffa;
+  border-radius: 6px;
+}
+.slidev-layout.module-eight th {
+  background: #eaf7ff;
+  color: #0b356b;
+  font-weight: 700;
+}
+.slidev-layout.module-eight th,
+.slidev-layout.module-eight td {
+  padding: 0.5rem 0.68rem;
+  border-bottom: 1px solid #cceafb;
+}
+.slidev-layout.module-eight tr:last-child td { border-bottom: 0; }
+.slidev-layout.module-eight pre {
+  background: #f4faff !important;
+  border: 1px solid #b9e0f5;
+  border-left: 4px solid #2d9fe7;
+  border-radius: 6px;
+  box-shadow: none;
+}
+.slidev-layout.module-eight p code,
+.slidev-layout.module-eight li code,
+.slidev-layout.module-eight td code {
+  background: #e9f4fb;
+  color: #0b356b;
+  border-radius: 4px;
+  padding: 0.08rem 0.3rem;
+}
+.slidev-layout.module-eight.module-cover {
+  color: #18395f;
+  padding: 4.2rem;
+  border-top: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+.slidev-layout.module-eight.module-cover .cover-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.slidev-layout.module-eight.module-cover .cover-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.slidev-layout.module-eight.module-cover h1,
+.slidev-layout.module-eight.module-cover h2 {
+  position: relative;
+  z-index: 1;
+}
+.slidev-layout.module-eight.module-cover h1 {
+  color: #0b356b;
+  max-width: 45%;
+  font-size: 2.65rem;
+  line-height: 1.15;
+  margin: 0 0 1.15rem;
+}
+.slidev-layout.module-eight.module-cover h2 {
+  color: #24578c;
+  max-width: 43%;
+  font-size: 1.28rem;
+  line-height: 1.35;
+  margin: 0;
+}
+.slidev-layout.module-eight .concept-visual {
+  display: block;
+  width: 100%;
+  max-height: 59vh;
+  object-fit: contain;
+  margin: 0.65rem auto 0;
+  border-radius: 6px;
+}
+.slidev-layout.module-eight .concept-caption {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.35rem;
+  color: #164e80;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+.slidev-layout.module-eight.two-cols-header {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  grid-template-rows: auto 1fr !important;
+  column-gap: 2.5rem;
+}
+.slidev-layout.module-eight.two-cols-header .col-left,
+.slidev-layout.module-eight.two-cols-header .col-right {
+  min-width: 0;
+  padding-top: 0.1rem;
+}
+.slidev-layout.module-eight.compact-table table { font-size: 0.82rem; }
+.slidev-layout.module-eight.compact-table th,
+.slidev-layout.module-eight.compact-table td { padding: 0.34rem 0.52rem; }
+.slidev-layout.module-eight.compact-code pre code {
+  font-size: 0.7rem;
+  line-height: 1.25;
+}
+
+.slidev-layout.module-eight { overflow-y: auto; overflow-x: hidden; }
+
+/* Bound visuals to the 980x552 slide canvas rather than browser vh units. */
+.slidev-layout.module-eight .concept-visual { height: 300px; max-height: 300px; }
