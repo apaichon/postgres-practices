@@ -1,0 +1,3 @@
+ClaimSure synthetic tutorial file.
+Claim reference: CLM-BKK-001
+This is teaching data, not a real claim or a personal document.

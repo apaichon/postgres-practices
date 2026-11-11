@@ -1,0 +1,37 @@
+{
+  "source_slide": "/Users/apaichon/Projects/Courses/postgres/setup-postgres-server/postgres-admin-labs/docs/slides/module-04-security-user-management-th.md",
+  "source_slide_sha256": "4939bb00564a93773fb3f2e5ffd8e3c92b8f0e12d59118eb72878b7672c5ef4b",
+  "imported_slide": "../../slides/module-04-security-user-management-th.md",
+  "slide_count": 38,
+  "sql_blocks": 36,
+  "adaptations": [
+    "Local SQL source paths in slide text and speaker notes",
+    "Local make slides MODULE=4:th launch command; removed unavailable upstream shell runner link",
+    "Imported source Module 4/Thai layout CSS via slides/setup/main.ts, scoped to pure-lab decks for direct slide links",
+    "Prefix all five NOLOGIN owner/capability roles with role_; preserve LOGIN names"
+  ],
+  "sql_sources": {
+    "04-security-user-management.sql": {
+      "source": "/Users/apaichon/Projects/Courses/postgres/setup-postgres-server/postgres-admin-labs/scripts/sql/04-security-user-management.sql",
+      "sha256": "209a7250699189026dee0b1cf2926e51815f476c85413a80fe1776458aa05f50",
+      "local_sha256": "abcc8fc3100c8d7535d4eda51c02ba7e883b4f5465865c859069241701b21704"
+    },
+    "04-security-user-management-reset.sql": {
+      "source": "/Users/apaichon/Projects/Courses/postgres/setup-postgres-server/postgres-admin-labs/scripts/sql/04-security-user-management-reset.sql",
+      "sha256": "72a2c7e9218b9194278da11a21dbced91a9b9a5cd01961705910c7756cca4603",
+      "local_sha256": "f6821416e31d395910c828ab18dcfd9d7d0bd19f6eb3e1b690b6fb62346d252d"
+    }
+  },
+  "imported_on": "2026-11-11",
+  "imported_slide_sha256": "43fe532eb011a71bffa848a4a70009a97a68068126ef35f076262cdc8074c93d",
+  "style_dependency": "../../slides/styles/module04-security-th.css",
+  "style_source": "/Users/apaichon/Projects/Courses/postgres/setup-postgres-server/postgres-admin-labs/docs/slides/style.css",
+  "role_name_mapping": {
+    "claimsure_owner_xx": "role_claimsure_owner_xx",
+    "claimsure_read_xx": "role_claimsure_read_xx",
+    "claimsure_write_xx": "role_claimsure_write_xx",
+    "claimsure_approve_xx": "role_claimsure_approve_xx",
+    "claimsure_audit_xx": "role_claimsure_audit_xx"
+  },
+  "sha256_scope": "sql_sources.sha256 identifies the upstream source; local_sha256 identifies the adapted local file."
+}

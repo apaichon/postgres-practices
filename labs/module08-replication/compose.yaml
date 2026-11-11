@@ -1,0 +1,62 @@
+# Always use a distinct project per student (see .env.example and the lab guide).
+# Node names stay fixed; the primary role can move from pg1 to pg2.
+name: ${COMPOSE_PROJECT_NAME:-postgres-practices-m8}
+
+x-node: &node
+  image: ${M8_IMAGE:-postgres:18-alpine@sha256:123b17998ccaf47e53b502e8c6a1e79afd8f579c6f3eec83c563da026f957395}
+  entrypoint: ["/bin/bash", "/lab/node-entrypoint.sh"]
+  command: ["postgres"]
+  restart: "no"
+  stop_grace_period: 30s
+  shm_size: 128mb
+  environment: &environment
+    PGDATA: /var/lib/postgresql/18/docker
+    POSTGRES_DB: claimsure_m8
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: ${M8_ADMIN_PASSWORD:?Set M8_ADMIN_PASSWORD in .env}
+    M8_REPLICATION_PASSWORD: ${M8_REPLICATION_PASSWORD:?Set M8_REPLICATION_PASSWORD in .env}
+    POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --data-checksums
+  networks: [replication]
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U postgres -d claimsure_m8"]
+    interval: 2s
+    timeout: 3s
+    retries: 30
+
+services:
+  pg1:
+    <<: *node
+    environment:
+      <<: *environment
+      M8_NODE: pg1
+      M8_BOOTSTRAP: "true"
+    ports: ["127.0.0.1:${M8_PG1_PORT:-55811}:5432"]
+    volumes:
+      - pg1_data:/var/lib/postgresql
+      - ./:/lab:ro
+  pg2:
+    <<: *node
+    environment:
+      <<: *environment
+      M8_NODE: pg2
+    ports: ["127.0.0.1:${M8_PG2_PORT:-55812}:5432"]
+    volumes:
+      - pg2_data:/var/lib/postgresql
+      - ./:/lab:ro
+  pg3:
+    <<: *node
+    environment:
+      <<: *environment
+      M8_NODE: pg3
+    ports: ["127.0.0.1:${M8_PG3_PORT:-55813}:5432"]
+    volumes:
+      - pg3_data:/var/lib/postgresql
+      - ./:/lab:ro
+
+volumes:
+  pg1_data:
+  pg2_data:
+  pg3_data:
+networks:
+  replication:
+    internal: true

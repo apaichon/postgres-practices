@@ -1,0 +1,307 @@
+{
+  "postgresql": "18.6",
+  "role_name_convention": "NOLOGIN roles use role_ prefix; LOGIN names unchanged",
+  "nologin_roles_verified": [
+    "role_claimsure_approve_01",
+    "role_claimsure_audit_01",
+    "role_claimsure_owner_01",
+    "role_claimsure_read_01",
+    "role_claimsure_write_01"
+  ],
+  "guide_matches_source_blocks": true,
+  "five_real_tcp_sessions": true,
+  "source_blocks": [
+    {
+      "block": "0",
+      "connection": "A",
+      "login": "postgres",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4A.1",
+      "connection": "A",
+      "login": "postgres",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4A.2",
+      "connection": "A",
+      "login": "postgres",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4A.3",
+      "connection": "A",
+      "login": "postgres",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4A.4",
+      "connection": "A",
+      "login": "postgres",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4B.1",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4B.2",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4B.3",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4C.1",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4C.2",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4C.3",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4C.4",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4C.5",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": "42501",
+      "pass": true
+    },
+    {
+      "block": "4C.6",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4D.1",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4D.2",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4D.3",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": "42501",
+      "pass": true
+    },
+    {
+      "block": "4D.4",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4D.5",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4E.1",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4E.2",
+      "connection": "C",
+      "login": "internal_auditor_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4E.3",
+      "connection": "C",
+      "login": "internal_auditor_01",
+      "expected_sqlstate": "42501",
+      "pass": true
+    },
+    {
+      "block": "4E.4",
+      "connection": "C",
+      "login": "internal_auditor_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4E.5",
+      "connection": "D",
+      "login": "manager_th_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4E.6",
+      "connection": "D",
+      "login": "manager_th_01",
+      "expected_sqlstate": "42501",
+      "pass": true
+    },
+    {
+      "block": "4E.7",
+      "connection": "D",
+      "login": "manager_th_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4F.1",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4F.2",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4F.3",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4F.4",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": "42501",
+      "pass": true
+    },
+    {
+      "block": "4F.5",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4F.6",
+      "connection": "C",
+      "login": "internal_auditor_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4G.1",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4G.2",
+      "connection": "B",
+      "login": "claim_app_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4H.1",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    },
+    {
+      "block": "4H.2",
+      "connection": "S",
+      "login": "student_01",
+      "expected_sqlstate": null,
+      "pass": true
+    }
+  ],
+  "failed_transaction_probes": [
+    {
+      "after_block": "4C.5",
+      "sqlstate": "25P02",
+      "pass": true
+    },
+    {
+      "after_block": "4D.3",
+      "sqlstate": "25P02",
+      "pass": true
+    },
+    {
+      "after_block": "4E.3",
+      "sqlstate": "25P02",
+      "pass": true
+    },
+    {
+      "after_block": "4E.6",
+      "sqlstate": "25P02",
+      "pass": true
+    },
+    {
+      "after_block": "4F.4",
+      "sqlstate": "25P02",
+      "pass": true
+    }
+  ],
+  "final_state": {
+    "claim_rows": 3,
+    "temporary_rows": 0,
+    "claim_status": "UNDER_REVIEW",
+    "audit_rows": 1
+  },
+  "reset": {
+    "wrong_student_refused": true,
+    "lab_schema_removed": true,
+    "lab_roles_remaining": 0,
+    "student_database_and_unrelated_table_preserved": true
+  },
+  "execution_environment": "Isolated temporary PostgreSQL container; removed after validation."
+}

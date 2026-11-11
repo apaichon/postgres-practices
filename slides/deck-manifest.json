@@ -1,0 +1,86 @@
+{
+  "0": {
+    "file": "module-00-overview.md",
+    "slides": 10,
+    "title": "Course Overview & Lab Prerequisites",
+    "fundamentals": 0
+  },
+  "1": {
+    "file": "module-01-basic-sql.md",
+    "slides": 35,
+    "title": "Basic SQL",
+    "fundamentals": 9
+  },
+  "2": {
+    "file": "module-02-advanced-sql.md",
+    "slides": 34,
+    "title": "Advanced SQL",
+    "fundamentals": 13
+  },
+  "3": {
+    "file": "module-03-performance-tuning.md",
+    "slides": 27,
+    "title": "Performance Tuning",
+    "fundamentals": 14
+  },
+  "4": {
+    "file": "module-04-security-user-management.md",
+    "slides": 29,
+    "title": "Security",
+    "fundamentals": 13
+  },
+  "4:clone": {
+    "file": "module-04-security-clone.md",
+    "slides": 34,
+    "title": "Security Clone Schema",
+    "fundamentals": 11,
+    "variant_of": "4",
+    "lab": "../labs/module-04-security-clone.md"
+  },
+  "4:th": {
+    "file": "module-04-security-user-management-th.md",
+    "slides": 38,
+    "title": "Security และ User Management (Pure SQL ภาษาไทย)",
+    "fundamentals": 0,
+    "fundamentals_note": "Upstream deck teaches concepts inline without separate fundamental slide tags",
+    "variant_of": "4",
+    "lab": "../labs/module-04-security-user-management-th.md"
+  },
+  "5": {
+    "file": "module-05-architecture.md",
+    "slides": 29,
+    "title": "Architecture",
+    "fundamentals": 16
+  },
+  "6": {
+    "file": "module-06-configuration-simple.md",
+    "slides": 34,
+    "title": "Configuration",
+    "fundamentals": 11
+  },
+  "7": {
+    "file": "module-07-backup-recovery.md",
+    "slides": 32,
+    "title": "Backup & Recovery",
+    "fundamentals": 12
+  },
+  "8": {
+    "file": "module-08-replication-th.md",
+    "title": "Replication & HA",
+    "english_file": "module-08-replication.md",
+    "slides": 32,
+    "fundamentals": 10
+  },
+  "9": {
+    "file": "module-09-monitoring.md",
+    "slides": 31,
+    "title": "Monitoring",
+    "fundamentals": 10
+  },
+  "10": {
+    "file": "module-10-modern-features-supabase.md",
+    "slides": 34,
+    "title": "Modern PostgreSQL",
+    "fundamentals": 13
+  }
+}

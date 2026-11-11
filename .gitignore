@@ -1,0 +1,46 @@
+# Local credentials; keep reusable configuration examples.
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.sample
+!.env.template
+
+# Generated documents.
+*.[pP][dD][fF]
+
+# Large generated media, archives, and database backups.
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.avi
+*.wav
+*.mp3
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+*.dump
+*.backup
+*.bak
+*.sql.gz
+*.sql.zst
+
+# Dependencies, caches, and generated output.
+.worktrees/
+.vscode/
+*.session.sql
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+/output/
+/tmp/
+/artifacts/
+dist/
+build/
+coverage/

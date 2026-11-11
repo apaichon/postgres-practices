@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lab 10 · Supabase Data API และ Authentication</title>
+<style>
+:root{color-scheme:light;--navy:#10355d;--blue:#157bb7;--line:#d6e5f0;--muted:#4b647b}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f6f9fc;color:#183650;font:17px/1.8 'Noto Sans Thai','Thonburi',system-ui,sans-serif}
+header{padding:36px max(24px,calc((100vw - 1320px)/2));background:#10355d;color:white;border-bottom:5px solid #35b5ee}
+header small{letter-spacing:.1em;color:#a5dfff}header div{font-size:27px;font-weight:700;margin-top:6px}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:40px;max-width:1360px;padding:38px 24px 90px;margin:auto}
+nav{align-self:start;position:sticky;top:20px;max-height:90vh;overflow:auto;font-size:13px;padding-right:15px}
+nav strong{display:block;color:var(--navy);margin-bottom:12px}nav a{display:block;line-height:1.7;padding:7px 0;border-bottom:1px solid var(--line);color:var(--muted)}
+main{background:white;border:1px solid var(--line);padding:30px 40px;min-width:0}h1,h2,h3{color:var(--navy);line-height:1.45}h1{font-size:32px;margin:0 0 22px}h2{font-size:25px;margin:50px 0 18px;padding-top:14px;border-top:2px solid var(--line);scroll-margin-top:20px}h3{font-size:21px}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}p,ul{margin:16px 0}li{margin:6px 0}strong{font-weight:700}
+img{display:block;width:100%;height:auto;margin:26px 0;border:1px solid #bdcddd;border-radius:6px;box-shadow:0 8px 22px #173b5910;cursor:zoom-in}
+.table-scroll{overflow:auto;margin:24px 0}table{border-collapse:collapse;width:100%;font-size:15px}th{background:#eaf5fc;color:var(--navy);text-align:left}th,td{border:1px solid var(--line);padding:10px 13px;vertical-align:top}
+code{font:14px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;background:#edf3f8;padding:2px 5px;border-radius:3px;overflow-wrap:anywhere}
+pre{background:#102b44;color:#e2f2ff;padding:22px;overflow:auto;line-height:1.65;border-left:4px solid #39baf4;border-radius:4px}pre code{background:none;padding:0;color:inherit;white-space:pre;overflow-wrap:normal}
+footer{color:var(--muted);padding:30px 0;font-size:13px}dialog{max-width:96vw;max-height:96vh;padding:8px;border:0;border-radius:8px;background:white}dialog::backdrop{background:#04192fdd}dialog img{max-height:88vh;width:auto;max-width:92vw;margin:0;box-shadow:none;cursor:zoom-out}
+@media(max-width:1050px){.layout{grid-template-columns:1fr;gap:18px}nav{position:static;max-height:220px}main{padding:24px}h1{font-size:27px}h2{font-size:23px}}
+@media print{header,nav,dialog{display:none}.layout{display:block;padding:0}main{border:0;padding:0}h2{break-before:auto}pre{white-space:pre-wrap}a{color:inherit}img,table{break-inside:avoid}}
+</style></head><body>
+<header><small>CLAIMSURE ACADEMY · HANDS-ON TUTORIAL</small><div>Data API + Authentication: เรียก API แล้วเห็นข้อมูลตามสิทธิ์</div></header>
+<div class="layout"><nav aria-label="สารบัญ"><strong>ทำตามทีละขั้น</strong><a href="#step-1">1. เห็นงานที่ลดลงก่อนเริ่ม</a>
+<a href="#step-2">2. เตรียมระบบและข้อมูลตัวอย่าง</a>
+<a href="#step-3">3. เรียกดูผลทันที — API demo</a>
+<a href="#step-4">4. ลงมือด้วย curl — อ่าน endpoint โดยยังไม่ Login</a>
+<a href="#step-5">5. Login จริง แล้วใช้ token อ่านข้อมูลของ BKK</a>
+<a href="#step-6">6. เปลี่ยนเป็น CM แล้วทดลองข้ามสิทธิ์</a>
+<a href="#step-7">7. ทดสอบการเขียนข้อมูลตามสิทธิ์</a>
+<a href="#step-8">8. เชื่อมผล API กลับไปยัง Table และ Policy</a>
+<a href="#step-9">9. จบ Lab และเนื้อหาเสริม</a><footer><a href="API-LAB.md">Markdown Source</a><br><a href="README.md">Studio / หัวข้อเสริม</a><br><a href="verification.json">API Verification</a></footer></nav><main><h1>Lab 10 — สร้าง Data API และ Authentication ด้วย Supabase</h1>
+<p><strong>เป้าหมาย:</strong> มี REST API สำหรับอ่าน เพิ่ม และแก้ไขข้อมูลเคลม พร้อม Login และสิทธิ์ตามผู้ใช้ โดยใช้ Table, Auth และ RLS ของ Supabase ผู้เรียนต้องเรียก API จริงและอธิบายผลที่เห็นได้</p>
+<p>เส้นทางหลักใช้เวลาประมาณ 35–45 นาทีหลังเปิดระบบ เน้น <strong>สร้าง Table → Login → เรียก Data API → เปลี่ยนผู้เรียก → ตรวจสิทธิ์</strong> ส่วน Storage, Realtime, Edge Functions และการดูแลระบบเป็นหัวข้อเสริม</p>
+<h2 id="step-1">1. เห็นงานที่ลดลงก่อนเริ่ม</h2>
+<table>
+<thead>
+<tr>
+<th>งานของแอป</th>
+<th>สิ่งที่ใช้ใน Lab</th>
+<th>ส่วนที่ผู้เรียนยังต้องออกแบบ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>สร้าง endpoint อ่าน/เพิ่ม/แก้ไขเคลม</td>
+<td>Data API จาก Table ผ่าน PostgREST</td>
+<td>Schema, constraints และ grants</td>
+</tr>
+<tr>
+<td>Login ด้วย Email/Password</td>
+<td>Supabase Auth ออก access token ให้</td>
+<td>ผู้ใช้ที่อนุญาตและนโยบายบัญชี</td>
+</tr>
+<tr>
+<td>ตรวจตัวตนของ request</td>
+<td>ใช้ user JWT เรียก Data API</td>
+<td>ส่ง token ของผู้ใช้ที่ Login อยู่</td>
+</tr>
+<tr>
+<td>จำกัดข้อมูลของแต่ละคน</td>
+<td>RLS ใน PostgreSQL</td>
+<td>Policy ที่ตรงกับกติกาธุรกิจ</td>
+</tr>
+<tr>
+<td>ทดสอบการเข้าถึง</td>
+<td>HTTP requests ไปยัง endpoint เดิม</td>
+<td>ตรวจทั้งกรณีอนุญาตและปฏิเสธ</td>
+</tr>
+</tbody>
+</table>
+<p>ใน Lab ไม่ต้องเขียน route/controller สำหรับ CRUD และ Login เอง แต่ยังต้องกำหนดสิทธิ์ให้ครบ ไม่ใช่สร้าง Table แล้วเปิดทุกแถวให้ทุกคน</p>
+<p>เมื่อเขียนแอปด้วย Supabase JavaScript client ที่ตั้งค่า Project URL และ anon key ไว้แล้ว ส่วน Login และอ่านข้อมูลใช้โค้ดลักษณะนี้ได้ โดย SDK ใช้ session ของคนที่ Login ส่งไปกับ request:</p>
+<pre><code class="language-javascript">const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+if (loginError) throw loginError;
+
+const { data: claims, error } = await supabase
+  .from('claimsure_claims')
+  .select('claim_no,branch,amount,status')
+  .order('claim_no');
+if (error) throw error;
+console.table(claims);
+</code></pre>
+<p>เปลี่ยนผู้ใช้ที่ Login แล้วโค้ดอ่านข้อมูลเดิมก็ได้ผลตาม RLS ของคนนั้น ในบทฝึกด้านล่างใช้ curl เพื่อให้เห็น request และผลตอบกลับอย่างชัดเจน</p>
+<pre><code class="language-text">Email + Password ──POST /auth/v1/token──&gt; Auth ──&gt; User JWT
+                                                   │
+GET /rest/v1/claimsure_claims + apikey + JWT ─────────┘
+                         │
+                         v
+               database role + RLS ──&gt; JSON เฉพาะข้อมูลที่มีสิทธิ์
+</code></pre>
+<h2 id="step-2">2. เตรียมระบบและข้อมูลตัวอย่าง</h2>
+<p>รันจาก <strong>root ของ repository <code>postgres-practices</code></strong> ด้วย Docker Compose v2 และ Python 3.10+:</p>
+<pre><code class="language-bash">bash labs/docker-labs.sh 10 init
+# ตรวจ project name และ host ports ใน labs/supabase/.env ก่อนเปิดครั้งแรก
+bash labs/docker-labs.sh 10 config
+bash labs/docker-labs.sh 10 pull
+bash labs/docker-labs.sh 10 up
+bash labs/docker-labs.sh 10 seed
+</code></pre>
+<p>หาก port 18000 ถูกใช้อยู่ ให้ตั้ง ports/URLs ตาม <a href="../../../labs/DOCKER-LABS.md#existing-stacks-and-multiple-students">คู่มือ Docker Labs</a> ก่อน <code>up</code></p>
+<p><code>seed</code> เตรียม Table, Grants, RLS, Confirmed Auth Users สองราย และ Claims สี่แถว โดยไม่ต้องตั้ง SMTP หรือเตรียม Storage สำหรับบทหลัก ใช้ข้อมูลจำลองเท่านั้น และรัน <code>seed</code> ซ้ำเฉพาะเมื่อตั้งใจคืนค่า Demo</p>
+<table>
+<thead>
+<tr>
+<th>ผู้ใช้</th>
+<th>ข้อมูลที่เป็นเจ้าของ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adjuster.bkk@claimsure.example.com</code></td>
+<td>CLM-BKK-001, CLM-BKK-002</td>
+</tr>
+<tr>
+<td><code>adjuster.cm@claimsure.example.com</code></td>
+<td>CLM-CM-001, CLM-CM-002</td>
+</tr>
+</tbody>
+</table>
+<p>Email เปลี่ยนได้จาก <code>DEMO_BKK_EMAIL</code> / <code>DEMO_CM_EMAIL</code> ใน <code>.env</code> ทั้งสองใช้ <code>DEMO_PASSWORD</code> ของ Lab ส่วน Dashboard Basic Auth ใช้บัญชีอีกชุดหนึ่ง</p>
+<h2 id="step-3">3. เรียกดูผลทันที — API demo</h2>
+<pre><code class="language-bash">bash labs/docker-labs.sh 10 api-demo
+</code></pre>
+<p>คำสั่งนี้เรียก HTTP จริง แล้วแสดง <strong>ชื่อกรณีทดสอบ, method/path, HTTP status และ JSON ของการอ่านข้อมูล</strong> โดย Login Response ซ่อน token จากหน้าจอและรายงาน ใช้เป็น Demo ของผู้สอนหรือเช็กผลก่อนลงมือด้วย curl</p>
+<table>
+<thead>
+<tr>
+<th>ผู้เรียก / การทดลอง</th>
+<th>Role</th>
+<th>ผลที่ต้องเห็น</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ยังไม่ Login</td>
+<td><code>anon</code></td>
+<td>HTTP 200, <code>[]</code></td>
+</tr>
+<tr>
+<td>Login เป็น BKK แล้ว GET</td>
+<td><code>authenticated</code></td>
+<td>HTTP 200, เคลม BKK สองแถว</td>
+</tr>
+<tr>
+<td>Login เป็น CM แล้ว GET endpoint เดิม</td>
+<td><code>authenticated</code></td>
+<td>HTTP 200, เคลม CM สองแถว</td>
+</tr>
+<tr>
+<td>BKK ใส่ filter หา CM</td>
+<td><code>authenticated</code></td>
+<td>HTTP 200, <code>[]</code></td>
+</tr>
+<tr>
+<td>Backend/ผู้สอนอ่านด้วย service key</td>
+<td><code>service_role</code></td>
+<td>HTTP 200, เคลมสี่แถว</td>
+</tr>
+<tr>
+<td>Login ด้วย Password ผิด</td>
+<td>ยังไม่ผ่าน Auth</td>
+<td>HTTP 400/401</td>
+</tr>
+<tr>
+<td>ส่ง Bearer Token ไม่ถูกต้อง</td>
+<td>ไม่ผ่านการตรวจ JWT</td>
+<td>HTTP 401</td>
+</tr>
+<tr>
+<td>BKK เพิ่มเคลมของตน</td>
+<td><code>authenticated</code></td>
+<td>HTTP 201 และ BKK อ่านแถวใหม่ได้</td>
+</tr>
+<tr>
+<td>CM อ่านแถวใหม่ของ BKK</td>
+<td><code>authenticated</code></td>
+<td>HTTP 200, <code>[]</code></td>
+</tr>
+<tr>
+<td>BKK แก้ status ของเคลมตน</td>
+<td><code>authenticated</code></td>
+<td>HTTP 200, status เป็น REVIEW</td>
+</tr>
+<tr>
+<td>BKK เพิ่มเคลม/เปลี่ยน Owner ให้ CM</td>
+<td><code>authenticated</code></td>
+<td>HTTP 403</td>
+</tr>
+</tbody>
+</table>
+<p><strong>BKK และ CM ไม่ใช่ database roles คนละตัว:</strong> ทั้งคู่เป็น <code>authenticated</code> แต่ JWT มี user ID ต่างกัน และ RLS ตรวจ <code>auth.uid() = adjuster_id</code> จึงเห็นคนละแถว ชื่อสาขาเป็นข้อมูลประกอบ; Policy นี้ไม่ได้ให้ทุกคนในสาขาอ่านเคลมของกันและกัน</p>
+<p><code>service_role</code> เป็นการเทียบให้ผู้สอนเห็นขอบเขต Admin เท่านั้น Key นี้ข้าม RLS ได้ จึงเก็บไว้ที่ Backend/เครื่องมือผู้ดูแล ห้ามใส่ใน Frontend หรือใช้แทน token ของผู้ใช้เพื่อให้ request ผ่าน</p>
+<h2 id="step-4">4. ลงมือด้วย curl — อ่าน endpoint โดยยังไม่ Login</h2>
+<p>ใช้ <strong>Bash ใน Terminal เดียวกัน</strong> ตลอดขั้น 4–7 ต้องมี <code>curl</code> และ Python 3 ไม่ต้องมี SDK หรือแอป Backend เพิ่ม</p>
+<p>โหลดเฉพาะค่าที่ใช้เรียก API จาก <code>.env</code> ผ่าน Python parser ไม่ใช้ <code>source</code> เพราะบางค่ามีช่องว่าง:</p>
+<pre><code class="language-bash">SUPABASE_URL=$(python3 -c 'from labs.supabase.lab import config; print(config()[&quot;SUPABASE_PUBLIC_URL&quot;])')
+ANON_KEY=$(python3 -c 'from labs.supabase.lab import config; print(config()[&quot;ANON_KEY&quot;])')
+CLAIMS_URL=&quot;$SUPABASE_URL/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&amp;order=claim_no&quot;
+
+curl --silent --show-error &quot;$CLAIMS_URL&quot; \
+  -H &quot;apikey: $ANON_KEY&quot; \
+  -H &quot;Authorization: Bearer $ANON_KEY&quot; \
+  --write-out '\nHTTP %{http_code}\n'
+</code></pre>
+<p>ต้องได้ <code>[]</code> และ HTTP 200: Request เข้าถึง endpoint ได้ แต่ <code>anon</code> ไม่มี RLS Policy ที่อนุญาตให้อ่านแถวใด จึงไม่มีข้อมูลคืนมา กรณีนี้ต่างจาก HTTP 401 ที่ตรวจ token ไม่ผ่าน</p>
+<h2 id="step-5">5. Login จริง แล้วใช้ token อ่านข้อมูลของ BKK</h2>
+<p>เตรียม JSON สำหรับ Login โดยอ่าน Email/Password จาก <code>.env</code> ไม่ต้องพิมพ์ secrets ลงในประวัติคำสั่ง:</p>
+<pre><code class="language-bash">auth_payload() {
+  python3 - &quot;$1&quot; &lt;&lt;'PY'
+import json, sys
+from labs.supabase.lab import config
+values = config()
+print(json.dumps({&quot;email&quot;: values[&quot;DEMO_&quot; + sys.argv[1] + &quot;_EMAIL&quot;],
+                  &quot;password&quot;: values[&quot;DEMO_PASSWORD&quot;]}))
+PY
+}
+
+BKK_LOGIN=$(auth_payload BKK | curl --silent --show-error --fail-with-body \
+  &quot;$SUPABASE_URL/auth/v1/token?grant_type=password&quot; \
+  -H &quot;apikey: $ANON_KEY&quot; -H 'Content-Type: application/json' \
+  --data-binary @-)
+BKK_TOKEN=$(printf '%s' &quot;$BKK_LOGIN&quot; | python3 -c 'import json,sys; print(json.load(sys.stdin)[&quot;access_token&quot;])')
+BKK_ID=$(printf '%s' &quot;$BKK_LOGIN&quot; | python3 -c 'import json,sys; print(json.load(sys.stdin)[&quot;user&quot;][&quot;id&quot;])')
+
+curl --silent --show-error &quot;$CLAIMS_URL&quot; \
+  -H &quot;apikey: $ANON_KEY&quot; -H &quot;Authorization: Bearer $BKK_TOKEN&quot; \
+  --write-out '\nHTTP %{http_code}\n'
+</code></pre>
+<p>ต้องได้ HTTP 200 พร้อมสองแถวที่มี <code>claim_no</code> เป็น <strong>CLM-BKK-001 / CLM-BKK-002</strong> สังเกตว่า URL เดิมและ <code>apikey</code> เดิม สิ่งที่เปลี่ยนคือ Bearer Token หลัง Auth ยืนยันตัวตนแล้ว</p>
+<p>Response ของ Login มี <code>access_token</code>, <code>refresh_token</code> และ <code>user</code> คำสั่งเก็บไว้ในตัวแปร ไม่พิมพ์ token ออกหน้าจอ ในแอปจริง SDK ช่วยจัดการ session/refresh ได้ ส่วน Lab ใช้ curl เพื่อให้เห็น HTTP โดยตรง</p>
+<h2 id="step-6">6. เปลี่ยนเป็น CM แล้วทดลองข้ามสิทธิ์</h2>
+<pre><code class="language-bash">CM_LOGIN=$(auth_payload CM | curl --silent --show-error --fail-with-body \
+  &quot;$SUPABASE_URL/auth/v1/token?grant_type=password&quot; \
+  -H &quot;apikey: $ANON_KEY&quot; -H 'Content-Type: application/json' \
+  --data-binary @-)
+CM_TOKEN=$(printf '%s' &quot;$CM_LOGIN&quot; | python3 -c 'import json,sys; print(json.load(sys.stdin)[&quot;access_token&quot;])')
+CM_ID=$(printf '%s' &quot;$CM_LOGIN&quot; | python3 -c 'import json,sys; print(json.load(sys.stdin)[&quot;user&quot;][&quot;id&quot;])')
+
+curl --silent --show-error &quot;$CLAIMS_URL&quot; \
+  -H &quot;apikey: $ANON_KEY&quot; -H &quot;Authorization: Bearer $CM_TOKEN&quot; \
+  --write-out '\nHTTP %{http_code}\n'
+
+curl --silent --show-error &quot;$CLAIMS_URL&amp;branch=eq.CM&quot; \
+  -H &quot;apikey: $ANON_KEY&quot; -H &quot;Authorization: Bearer $BKK_TOKEN&quot; \
+  --write-out '\nHTTP %{http_code}\n'
+</code></pre>
+<p>ครั้งแรกต้องเห็น <strong>CLM-CM-001 / CLM-CM-002</strong> ครั้งที่สองต้องได้ <code>[]</code> แม้ BKK ระบุ filter หา CM เอง แสดงว่า Database บังคับสิทธิ์ และการเปลี่ยน query string ไม่ทำให้เข้าถึงแถวของคนอื่น</p>
+<h2 id="step-7">7. ทดสอบการเขียนข้อมูลตามสิทธิ์</h2>
+<p>ลองให้ BKK เพิ่มเคลมโดยตั้ง CM เป็นเจ้าของ:</p>
+<pre><code class="language-bash">REJECT_BODY=$(python3 - &quot;$CM_ID&quot; &lt;&lt;'PY'
+import json, sys, uuid
+print(json.dumps({&quot;claim_no&quot;: &quot;CLM-REJECT-&quot; + uuid.uuid4().hex,
+                  &quot;branch&quot;: &quot;CM&quot;, &quot;adjuster_id&quot;: sys.argv[1], &quot;amount&quot;: 100}))
+PY
+)
+printf '%s' &quot;$REJECT_BODY&quot; | curl --silent --show-error \
+  &quot;$SUPABASE_URL/rest/v1/claimsure_claims&quot; \
+  -H &quot;apikey: $ANON_KEY&quot; -H &quot;Authorization: Bearer $BKK_TOKEN&quot; \
+  -H 'Content-Type: application/json' --data-binary @- \
+  --write-out '\nHTTP %{http_code}\n'
+</code></pre>
+<p>ต้องได้ HTTP 403 จาก RLS <code>WITH CHECK</code> และไม่มีแถวถูกเพิ่ม จากนั้นใช้ชุดทดสอบอัตโนมัติให้ทำทั้งกรณีที่ผ่านและไม่ผ่าน:</p>
+<pre><code class="language-bash">bash labs/docker-labs.sh 10 verify
+</code></pre>
+<p>ต้องผ่าน <strong>15 กรณี Auth / Data API / RLS</strong> รวมการเพิ่มเคลมของ BKK, อ่านแถวที่เพิ่ม, ทดลองอ่านด้วย CM, แก้ status และปฏิเสธการโอน Owner ตัวทดสอบใช้แถวชั่วคราวของตนและลบคืนเมื่อจบ จึงยังเหลือข้อมูล Demo สี่แถว</p>
+<p>ผลตรวจอยู่ที่ <a href="verification.json">verification.json</a> โดยไม่บันทึก passwords, API keys หรือ user tokens ใช้ <code>api-demo</code> หากต้องการดู HTTP/JSON ของแต่ละกรณีแทนการดูเพียง PASS</p>
+<h2 id="step-8">8. เชื่อมผล API กลับไปยัง Table และ Policy</h2>
+<p>เปิด Studio ตาม <code>SUPABASE_PUBLIC_URL</code> ใช้ <code>DASHBOARD_USERNAME</code> / <code>DASHBOARD_PASSWORD</code> จาก <code>.env</code> แล้วดูเพียงสามจุด:</p>
+<ol>
+<li><strong>Table Editor → public.claimsure_claims:</strong> มีสี่แถวและคอลัมน์ <code>adjuster_id</code></li>
+<li><strong>Authentication → Users:</strong> มี Auth Users สองรายที่ UUID ตรงกับ Owner ใน Table</li>
+<li><strong>Policies:</strong> SELECT ใช้ <code>USING</code>; INSERT/UPDATE ใช้ <code>WITH CHECK</code></li>
+</ol>
+<p><img src="images/04-table-editor.png" alt="เคลมจำลองสี่รายการใน Studio ของ Admin"></p>
+<p>SQL ส่วนสำคัญจาก <a href="../../../labs/supabase/sql/01-claims-schema.sql">ไฟล์ Schema ฉบับเต็ม</a>:</p>
+<pre><code class="language-sql">GRANT SELECT ON public.claimsure_claims TO anon;
+GRANT SELECT, INSERT, UPDATE ON public.claimsure_claims TO authenticated;
+ALTER TABLE public.claimsure_claims ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY claims_read_own ON public.claimsure_claims
+  FOR SELECT TO authenticated
+  USING ((SELECT auth.uid()) = adjuster_id);
+</code></pre>
+<p>ตัวอย่างข้างบนใช้สำหรับอ่านประกอบ ให้รันไฟล์ Schema เต็มหากเตรียมเอง เพราะมี constraints และ Policies สำหรับการเขียนด้วย Studio ใช้สิทธิ์ Admin จึงเห็นทั้งสี่แถว; หลักฐานสิทธิ์ของแอปคือผล HTTP ด้วย User JWT</p>
+<p>ผู้เรียนควรอธิบายได้ว่า <strong>Table ให้ Data API, Auth ให้ตัวตนและ token, Grants กำหนด operations และ RLS กำหนดแถวที่เข้าถึงได้</strong> งานที่ลดลงคือการเขียน CRUD routes และระบบ Login/token ด้วยตนเอง ส่วนกติกาธุรกิจและสิทธิ์ยังเป็นงานของผู้พัฒนา</p>
+<h2 id="step-9">9. จบ Lab และเนื้อหาเสริม</h2>
+<pre><code class="language-bash">unset SUPABASE_URL ANON_KEY CLAIMS_URL BKK_LOGIN BKK_TOKEN BKK_ID CM_LOGIN CM_TOKEN CM_ID REJECT_BODY
+unset -f auth_payload
+bash labs/docker-labs.sh 10 stop
+</code></pre>
+<p>Volumes และ <code>.env</code> ยังอยู่ เปิดใหม่ด้วย <code>up</code> โดยไม่ต้อง <code>seed</code> ทุกครั้ง</p>
+<p>Storage และ Edge Functions ใช้เฉพาะเมื่อเลือกทำหัวข้อเสริม:</p>
+<pre><code class="language-bash">bash labs/docker-labs.sh 10 seed --extended
+bash labs/docker-labs.sh 10 verify --extended
+</code></pre>
+<p>อ่านเพิ่มได้จาก <a href="README.md">คู่มือ Studio และ Storage</a>, <a href="USER-GUIDE.md">คู่มือดูแลระบบ</a> และ <a href="../../../labs/supabase/README.md">การติดตั้ง Compose</a></p>
+<p>อ้างอิง: <a href="https://supabase.com/docs/guides/api">Supabase Data API</a>, <a href="https://supabase.com/docs/guides/auth/passwords">Password Auth</a>, <a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Row Level Security</a></p>
+</main></div>
+<dialog aria-label="ภาพหน้าจอขนาดเต็ม"><img alt=""></dialog>
+<script>
+for(const table of document.querySelectorAll('table')){const wrapper=document.createElement('div');wrapper.className='table-scroll';table.replaceWith(wrapper);wrapper.append(table)}
+const dialog=document.querySelector('dialog');for(const image of document.querySelectorAll('main img')){image.tabIndex=0;const show=()=>{const large=dialog.querySelector('img');large.src=image.src;large.alt=image.alt;dialog.showModal()};image.addEventListener('click',show);image.addEventListener('keydown',event=>{if(event.key==='Enter')show()})}dialog.addEventListener('click',()=>dialog.close());
+</script></body></html>

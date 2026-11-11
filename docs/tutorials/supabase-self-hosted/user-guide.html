@@ -1,0 +1,1022 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>คู่มือใช้งาน Supabase Self-hosted - ClaimSure</title>
+<style>
+:root{color-scheme:light;--ink:#173952;--navy:#12365d;--blue:#147cb4;--line:#cfdfec;--muted:#50697d}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f4f8fc;color:var(--ink);font:17px/1.8 'Thonburi','Noto Sans Thai','Leelawadee UI',system-ui,sans-serif}
+.top{background:var(--navy);color:white;padding:24px max(24px,calc((100vw - 1320px)/2));border-bottom:5px solid #3bb4ee}.top strong{display:block;font-size:23px}.top small{color:#b9e3fa;font-size:13px;letter-spacing:.06em}
+.layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:36px;max-width:1360px;padding:36px 24px 80px;margin:auto}aside{position:sticky;top:18px;align-self:start;max-height:94vh;overflow:auto;font-size:13px;padding-right:12px}aside a{display:block;padding:7px 0;border-bottom:1px solid var(--line);line-height:1.8}aside strong{display:block;margin-bottom:10px}
+main{min-width:0;background:white;border:1px solid var(--line);padding:38px 42px}h1,h2,h3{color:var(--navy);line-height:1.5}h1{font-size:34px;margin:0 0 22px}h2{font-size:27px;margin:0 0 22px;scroll-margin-top:24px}h3{font-size:20px;margin:28px 0 10px}p,ul,ol{margin:15px 0}li{margin:7px 0}a{color:var(--blue);text-decoration:none;overflow-wrap:anywhere}a:hover{text-decoration:underline}
+.brand{font:700 13px/1.5 system-ui,sans-serif;letter-spacing:.12em;color:#147cb4;margin-bottom:34px}.cover{padding:8px 0 24px}.cover h1{max-width:700px}.cover p:first-of-type{font-size:22px;color:var(--blue)}.download{padding:18px 0;border-top:1px solid var(--line);font-size:14px}.download a{margin-right:18px}.contents{margin:20px 0 46px;padding:25px 0;border-top:2px solid var(--line)}.contents h2{font-size:24px}.contents a{display:block;font-size:15px;padding:6px 0}.chapter{padding:38px 0 10px;border-top:2px solid var(--line);margin-top:30px}
+.table-scroll{overflow:auto;margin:24px 0}table{width:100%;border-collapse:collapse;font-size:14px}th{background:#edf6fc;color:var(--navy);text-align:left}th,td{border:1px solid var(--line);padding:9px 11px;vertical-align:top}
+code{font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;background:#edf3f8;border-radius:3px;padding:2px 4px;overflow-wrap:anywhere}pre{background:#102b44;color:#ecf6ff;padding:23px 18px 18px;border-left:4px solid #39b6ed;border-radius:4px;overflow:auto;font-size:13px}pre code{background:none;color:inherit;padding:0;white-space:pre;overflow-wrap:normal}
+.code-wrap{position:relative}.copy{position:absolute;right:8px;top:7px;padding:2px 8px;background:#eff8ff;border:1px solid #9fbad0;border-radius:3px;font:12px system-ui,sans-serif;color:#12365d;cursor:pointer}
+main img{width:100%;height:auto;display:block;border:1px solid #bccedd;border-radius:4px;margin:24px 0;cursor:zoom-in}dialog{max-width:96vw;max-height:96vh;padding:8px;border:0;border-radius:5px}dialog::backdrop{background:#03182fe6}dialog img{max-width:92vw;max-height:88vh;width:auto;display:block;cursor:zoom-out}
+@media(max-width:1050px){.layout{grid-template-columns:1fr;gap:20px}aside{position:static;max-height:230px}main{padding:25px}h1{font-size:28px}h2{font-size:24px}.top strong{font-size:21px}}
+@page{size:A4;margin:20mm 17mm}
+@media print{html{scroll-behavior:auto}body{background:white;color:#172d40;font-size:10.3pt;line-height:1.65}.top,aside,.download,dialog,.copy{display:none!important}.layout{display:block;max-width:none;margin:0;padding:0}main{border:0;padding:0}.brand{font-size:10pt;margin:0 0 25mm}.cover{min-height:250mm;break-after:page;padding:12mm 0 0}.cover h1{font-size:30pt;line-height:1.5;margin:0 0 10mm}.cover p:first-of-type{font-size:16pt;margin:0 0 12mm}.cover p{margin:6mm 0;max-width:170mm}.contents{margin:0;padding:0;border:0;break-after:page}.contents h2{font-size:22pt;margin-bottom:10mm}.contents a{font-size:12pt;padding:3mm 0;border-bottom:1px solid #dbe6ee}.chapter{margin:0;padding:0;border:0;break-before:page}h2{font-size:20pt;margin:0 0 6mm;break-after:avoid}h3{font-size:12pt;margin:6mm 0 2mm;break-after:avoid}p,ul,ol{margin:3mm 0}p,li{orphans:3;widows:3}li{margin:1.5mm 0}a{color:#145e8b}table{font-size:9pt;line-height:1.55;break-inside:auto}th,td{padding:2.2mm 2.5mm;overflow-wrap:anywhere}thead{display:table-header-group}tr{break-inside:avoid}.table-scroll{overflow:visible;margin:4mm 0}code{font-size:8.5pt}pre{background:#eef4fa!important;color:#142c40!important;padding:4mm;border-left:2px solid #2b96ca;white-space:pre-wrap;overflow:visible;break-inside:avoid}pre code{white-space:pre-wrap;overflow-wrap:anywhere;color:#142c40!important}.code-wrap{break-inside:avoid}main img{max-height:110mm;object-fit:contain;border-radius:0;margin:4mm 0}p:has(img){break-inside:avoid;break-after:avoid}}
+</style><style>
+code{font-family:ui-monospace,SFMono-Regular,Consolas,'Thonburi',monospace}
+main img[src*="08-user-guide"]{width:auto;max-width:100%;max-height:500px;margin-inline:auto}
+@media print{ol{break-inside:avoid}.chapter:has(#chapter-7) h3:first-of-type{break-before:page}main img[src*="08-user-guide"]{max-height:90mm}}
+</style></head><body>
+<header class="top"><small>CLAIMSURE ACADEMY | USER GUIDE</small><strong>คู่มือใช้งาน Supabase Self-hosted</strong></header>
+<div class="layout"><aside aria-label="สารบัญ"><strong>เลือกหัวข้อที่ต้องการ</strong><a href="#chapter-1">1. เตรียมระบบครั้งแรก</a>
+<a href="#chapter-2">2. เข้าใช้งานและเลือกบัญชีให้ถูก</a>
+<a href="#chapter-3">3. รู้จักหน้า Studio</a>
+<a href="#chapter-4">4. ดูและค้นหา Claims ใน Table Editor</a>
+<a href="#chapter-5">5. ใช้ SQL Editor อย่างเป็นลำดับ</a>
+<a href="#chapter-6">6. สร้างและดูแล Auth Users</a>
+<a href="#chapter-7">7. ตรวจและเข้าใจ RLS Policies</a>
+<a href="#chapter-8">8. ใช้ Data API และพิสูจน์สิทธิ์</a>
+<a href="#chapter-9">9. จัดการไฟล์ด้วย Private Storage</a>
+<a href="#chapter-10">10. เชื่อมต่อด้วย psql หรือ DBeaver</a>
+<a href="#chapter-11">11. เปิด ปิด และปรับค่าระบบ</a>
+<a href="#chapter-12">12. เก็บข้อมูลและสำรองก่อนเปลี่ยนระบบ</a>
+<a href="#chapter-13">13. แก้ปัญหาที่พบบ่อย</a>
+<a href="#chapter-14">14. ตารางใช้งานด่วนและเอกสารอ้างอิง</a><p><a href="../../../output/pdf/supabase-self-hosted-user-guide-th.pdf">ดาวน์โหลด PDF</a><a href="USER-GUIDE.md">Markdown Source</a><a href="index.html">Tutorial เดิม</a></p></aside><main>
+<section class="cover"><div class="brand">CLAIMSURE ACADEMY<br>SUPABASE SELF-HOSTED | USER GUIDE</div><h1>คู่มือใช้งาน Supabase Self-hosted</h1>
+<p>สำหรับระบบ ClaimSure บน Docker Compose</p>
+<p>คู่มืออ้างอิงนี้ครอบคลุมงานดูแลระบบและหัวข้อเสริม สำหรับบทหลักของ Lab 10 ให้เริ่มที่ <a href="API-LAB.md">Data API + Authentication พร้อม curl</a> หรือ <a href="index.html">HTML lesson</a></p>
+<p>ฉบับ 1.0 | 9 พฤศจิกายน 2026 | ภาษาไทยและศัพท์เทคนิคภาษาอังกฤษ</p>
+<p>คู่มือนี้ใช้สำหรับผู้เรียน, Developer และผู้ดูแล Lab ที่ต้องการเข้า Studio จัดการข้อมูล Claim, สร้าง Auth Users และตรวจสิทธิ์ผ่าน Data API ใช้ข้อมูลจำลองของชุด <code>labs/supabase</code> ใน repository นี้</p>
+<p>ภาพประกอบมาจาก Studio ที่รันจริงในชุด Lab ชื่อเมนูอ้างอิง Studio <code>2026.11.02-sha-a05e7ec</code> และ PostgreSQL <code>17.6.1.136</code> ไม่ใช่ PostgreSQL 18 ของระบบ Classroom เดิม</p>
+<p><strong>ถ้าระบบเปิดอยู่แล้ว:</strong> เริ่มที่บท 2 โดยไม่ต้องติดตั้งหรือ <code>seed</code> ซ้ำ หากเพิ่งเปิดครั้งแรกให้ทำบท 1 ก่อน</p>
+<div class="download"><a href="../../../output/pdf/supabase-self-hosted-user-guide-th.pdf">ดาวน์โหลด PDF</a><a href="USER-GUIDE.md">Markdown</a></div></section>
+<section class="contents"><h2>สารบัญ</h2><a href="#chapter-1">1. เตรียมระบบครั้งแรก</a>
+<a href="#chapter-2">2. เข้าใช้งานและเลือกบัญชีให้ถูก</a>
+<a href="#chapter-3">3. รู้จักหน้า Studio</a>
+<a href="#chapter-4">4. ดูและค้นหา Claims ใน Table Editor</a>
+<a href="#chapter-5">5. ใช้ SQL Editor อย่างเป็นลำดับ</a>
+<a href="#chapter-6">6. สร้างและดูแล Auth Users</a>
+<a href="#chapter-7">7. ตรวจและเข้าใจ RLS Policies</a>
+<a href="#chapter-8">8. ใช้ Data API และพิสูจน์สิทธิ์</a>
+<a href="#chapter-9">9. จัดการไฟล์ด้วย Private Storage</a>
+<a href="#chapter-10">10. เชื่อมต่อด้วย psql หรือ DBeaver</a>
+<a href="#chapter-11">11. เปิด ปิด และปรับค่าระบบ</a>
+<a href="#chapter-12">12. เก็บข้อมูลและสำรองก่อนเปลี่ยนระบบ</a>
+<a href="#chapter-13">13. แก้ปัญหาที่พบบ่อย</a>
+<a href="#chapter-14">14. ตารางใช้งานด่วนและเอกสารอ้างอิง</a></section><section class="chapter"><h2 id="chapter-1">1. เตรียมระบบครั้งแรก</h2>
+<h3>สิ่งที่ต้องมีและตำแหน่งทำงาน</h3>
+<p>ต้องมี Docker Engine/Desktop พร้อม Compose v2 และ Python 3.10+ ส่วน Node.js 22+ ใช้เฉพาะการสร้างคู่มือ HTML หรือจับภาพด้วย Playwright คำสั่ง Terminal ในคู่มือนี้เริ่มจาก <strong>root ของ repository <code>postgres-practices</code></strong> ยกเว้นส่วนที่ระบุ Directory อื่น</p>
+<p>ตรวจ Directory และเครื่องมือก่อนเริ่ม:</p>
+<pre><code class="language-bash">pwd
+docker compose version
+python3 --version
+</code></pre>
+<p>ควรเห็น Directory ที่มี <code>labs/supabase/compose.yaml</code> หาก <code>pwd</code> ยังอยู่ใน <code>labs/supabase</code> ให้กลับ root ด้วย <code>cd ../..</code> ก่อนใช้คำสั่ง <code>python3 labs/supabase/lab.py ...</code></p>
+<h3>เปิดระบบครั้งแรกตามลำดับ</h3>
+<p><strong>ทำใน:</strong> Terminal | <strong>ผู้ใช้:</strong> OS User ที่มีสิทธิ์ใช้ Docker</p>
+<pre><code class="language-bash"># 1. สร้างไฟล์ค่าตั้งและ Secrets ของชุดนี้
+python3 labs/supabase/lab.py init
+
+# 2. ตรวจ Compose โดยไม่แสดง Secrets
+python3 labs/supabase/lab.py config
+
+# 3. ดาวน์โหลด Images ที่ pin เวอร์ชันไว้
+python3 labs/supabase/lab.py pull
+
+# 4. เปิด Services และรอ Health Checks
+python3 labs/supabase/lab.py up
+
+# 5. สร้างข้อมูลจำลองสำหรับใช้ตามคู่มือ
+python3 labs/supabase/lab.py seed --extended
+
+# 6. ทดสอบการเข้าถึงจริงผ่าน APIs
+python3 labs/supabase/lab.py verify --extended
+</code></pre>
+<p><strong>ผลที่ควรได้:</strong> Services 11 ตัวพร้อมใช้งาน, Auth Users จำลอง 2 ราย, Claims 4 แถว, Private Bucket 1 แห่ง และ Example File 1 ไฟล์ คำสั่ง <code>verify --extended</code> ต้องรายงาน <code>PASS</code> ทั้ง 18 กรณี (บทหลัก Data API/Auth ใช้ <code>verify</code> จำนวน 15 กรณี)</p>
+<p><code>init</code> ไม่เขียนทับ <code>.env</code> ที่มีอยู่แล้ว แต่ <code>seed --extended</code> จะสร้าง/ปรับ Password ของ Demo Users, ตั้ง Grants/Policies ของ Table ตัวอย่าง, คืนค่า Claims ที่มี Claim Number เดิม และอัปโหลด Example File ซ้ำ ใช้เมื่อเตรียม Demo หรือเมื่อตั้งใจคืนข้อมูลตัวอย่าง ไม่ใช้เป็นคำสั่งเปิดระบบประจำวัน</p>
+<h3>ไฟล์สำคัญอยู่ที่ไหน</h3>
+<table>
+<thead>
+<tr>
+<th>ไฟล์/Directory</th>
+<th>ใช้ทำอะไร</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>labs/supabase/compose.yaml</code></td>
+<td>ระบุ Services, Images, Ports และ Volumes</td>
+</tr>
+<tr>
+<td><code>labs/supabase/.env</code></td>
+<td>เก็บ URLs, Passwords และ Keys ของเครื่องนี้</td>
+</tr>
+<tr>
+<td><code>labs/supabase/lab.py</code></td>
+<td>ตัวช่วยเปิดระบบ, Seed และทดสอบ</td>
+</tr>
+<tr>
+<td><code>labs/supabase/sql/01-claims-schema.sql</code></td>
+<td>สร้าง Table, Grants และ RLS Policies</td>
+</tr>
+<tr>
+<td><code>labs/supabase/sql/02-demo-claims.sql</code></td>
+<td>เพิ่ม Claims โดยค้น Auth User UUID จาก Email</td>
+</tr>
+<tr>
+<td><code>labs/supabase/volumes/functions/</code></td>
+<td>Source ของ Edge Functions</td>
+</tr>
+</tbody>
+</table>
+<p>ไฟล์ <code>.env</code> ถูกสร้างด้วยสิทธิ์ <code>0600</code> ให้เก็บเป็นความลับและสำรองไว้กับข้อมูลของ Deployment ไม่ลบแล้วสร้าง Secrets ใหม่ทับข้อมูลใน Volumes เดิม</p>
+</section>
+<section class="chapter"><h2 id="chapter-2">2. เข้าใช้งานและเลือกบัญชีให้ถูก</h2>
+<h3>เปิดใช้งานในวันถัดไป</h3>
+<p><strong>ทำใน:</strong> Terminal | <strong>ผู้ใช้:</strong> OS User ที่ใช้ Docker</p>
+<pre><code class="language-bash">python3 labs/supabase/lab.py status
+# ถ้ายังไม่เปิด หรือเคย stop/down ให้ใช้:
+python3 labs/supabase/lab.py up
+</code></pre>
+<p>จากนั้นเปิด Browser ที่ <strong><a href="http://127.0.0.1:18000">http://127.0.0.1:18000</a></strong> และกรอก Basic Auth จาก <code>.env</code>:</p>
+<table>
+<thead>
+<tr>
+<th>ช่องที่ถาม</th>
+<th>ค่าที่ใช้</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Username</td>
+<td>ค่า <code>DASHBOARD_USERNAME</code> ค่าเริ่มต้นคือ <code>claimsure</code></td>
+</tr>
+<tr>
+<td>Password</td>
+<td>ค่า <code>DASHBOARD_PASSWORD</code> ที่ <code>init</code> สร้างให้</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ผลที่ควรได้:</strong> หน้า Project Overview ชื่อ <code>ClaimSure Self-hosted Lab</code> ดังภาพในบท 3</p>
+<h3>บัญชีสามประเภทนี้ใช้คนละงาน</h3>
+<table>
+<thead>
+<tr>
+<th>ต้องการทำอะไร</th>
+<th>บัญชี/Role</th>
+<th>Password หรือ Key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>เปิด Studio ผ่าน Browser</td>
+<td>Dashboard Basic Auth User</td>
+<td><code>DASHBOARD_PASSWORD</code></td>
+</tr>
+<tr>
+<td>ทำ SQL ใน Studio</td>
+<td>Role <code>postgres</code> ภายใน Project</td>
+<td>Studio จัดการ Connection ให้</td>
+</tr>
+<tr>
+<td>ต่อจาก psql/DBeaver ผ่าน Pooler</td>
+<td><code>postgres.claimsure</code></td>
+<td><code>POSTGRES_PASSWORD</code></td>
+</tr>
+<tr>
+<td>Sign-in เป็นผู้ใช้ Application</td>
+<td>Email ใน Authentication</td>
+<td>Password ของ Auth User; Demo ใช้ <code>DEMO_PASSWORD</code></td>
+</tr>
+<tr>
+<td>เรียก Data API ในฐานะผู้ใช้</td>
+<td>Role <code>authenticated</code> ที่ได้จาก User JWT</td>
+<td><code>ANON_KEY</code> + User Access Token</td>
+</tr>
+<tr>
+<td>ทำ Admin API จาก Trusted Backend</td>
+<td><code>service_role</code></td>
+<td><code>SERVICE_ROLE_KEY</code> ใช้ฝั่ง Server เท่านั้น</td>
+</tr>
+</tbody>
+</table>
+<p>Auth User ไม่ใช่ Database Role การเพิ่ม Email ใน Authentication ไม่ต้องสั่ง <code>CREATE ROLE</code> ใหม่ และการ Login เข้า Studio ไม่ได้ทำให้ Browser เป็น Auth User ของ Application</p>
+<h3>ใช้งานเมื่อ Docker อยู่บน Server</h3>
+<p>ค่าตั้งต้นเปิด Ports บน <code>127.0.0.1</code> ของ Docker Host ถ้า Browser อยู่คนละเครื่อง ให้รันคำสั่งนี้บนเครื่องที่ใช้ Browser แล้วคงหน้าต่าง SSH ไว้:</p>
+<pre><code class="language-bash">ssh -L 18000:127.0.0.1:18000 your-user@your-server
+</code></pre>
+<p>แทนชื่อ User/Server ด้วยค่าจริง จากนั้นเปิด <code>http://127.0.0.1:18000</code> ที่เครื่องตนเอง ถ้า Tunnel ใช้ Local Port อื่น ต้องคำนึงถึง Public URLs ที่ Studio/Client ใช้ด้วย</p>
+</section>
+<section class="chapter"><h2 id="chapter-3">3. รู้จักหน้า Studio</h2>
+<p>Self-hosted ชุดนี้มีหนึ่ง Project ให้ใช้งาน ไม่ต้องสร้าง Organization หรือ Project แบบ Supabase Cloud</p>
+<p><img src="images/01-studio-overview.png" alt="หน้า Project Overview ของ ClaimSure"></p>
+<p><strong>ภาพ 1:</strong> แถบด้านซ้ายเป็นเมนูหลัก บางหน้าจอแสดงเป็น Icons ให้เลื่อน Mouse ค้างเพื่อดูชื่อเมนู ส่วนชื่อ Project อยู่ด้านบน</p>
+<table>
+<thead>
+<tr>
+<th>เมนู</th>
+<th>งานที่ใช้บ่อย</th>
+<th>ควรรู้อะไรก่อนใช้</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project Overview</td>
+<td>ตรวจ Project และ URL ที่เชื่อมต่อ</td>
+<td>URL นี้เป็นของชุด Lab ตนเอง</td>
+</tr>
+<tr>
+<td>Table Editor</td>
+<td>ดู, กรอง, เพิ่ม และแก้ข้อมูลแบบตาราง</td>
+<td>ทำงานด้วยสิทธิ์ Admin ได้ จึงอาจเห็นทุกแถว</td>
+</tr>
+<tr>
+<td>SQL Editor</td>
+<td>รัน Query และคำสั่งจัดการ Database</td>
+<td>ตรวจ Role และ SQL ที่จะรันก่อนกด Run</td>
+</tr>
+<tr>
+<td>Database / Policies</td>
+<td>ดูโครงสร้างและ RLS Policies</td>
+<td>Table Grants และ Policies มีหน้าที่ต่างกัน</td>
+</tr>
+<tr>
+<td>Authentication / Users</td>
+<td>สร้างและตรวจ Auth Users</td>
+<td>ใช้ตัวตนนี้ในการ Sign-in ของแอป</td>
+</tr>
+<tr>
+<td>Storage / Files</td>
+<td>จัดการ Buckets และ Objects</td>
+<td>Private Bucket ต้องมีสิทธิ์อ่านไฟล์แยกต่างหาก</td>
+</tr>
+<tr>
+<td>Edge Functions</td>
+<td>ดู Source ของ Server-side Functions</td>
+<td><code>claimsure-health</code> เป็นตัวอย่างของชุดนี้</td>
+</tr>
+</tbody>
+</table>
+<p>การทดสอบว่า Application ถูกจำกัดสิทธิ์จริงต้องเรียก Data API ด้วย JWT ของ Auth User ตามบท 8 ไม่ตัดสินจากจำนวนแถวที่ Admin เห็นใน Studio</p>
+</section>
+<section class="chapter"><h2 id="chapter-4">4. ดูและค้นหา Claims ใน Table Editor</h2>
+<p><strong>ทำใน:</strong> Browser / Studio | <strong>บัญชี:</strong> Dashboard Admin</p>
+<h3>เปิดข้อมูลและตรวจจำนวนแถว</h3>
+<ol>
+<li>เปิด <strong>Table Editor</strong> ที่แถบซ้าย</li>
+<li>เลือก Schema เป็น <strong>public</strong></li>
+<li>เลือก Table <strong>claimsure_claims</strong></li>
+<li>ตรวจว่าแสดงข้อมูล 4 รายการ และมี Column <code>claim_no</code>, <code>branch</code>, <code>adjuster_id</code>, <code>amount</code>, <code>status</code></li>
+</ol>
+<p><img src="images/04-table-editor.png" alt="Table Editor ของ claimsure_claims"></p>
+<p><strong>ภาพ 2:</strong> <code>adjuster_id</code> คือ UUID ที่เชื่อมแถวนี้กับ <code>auth.users</code> ส่วนปุ่ม <code>RLS policies</code> ใช้เปิดดู Policies ของ Table ได้</p>
+<table>
+<thead>
+<tr>
+<th>Claim Number</th>
+<th>Branch</th>
+<th style="text-align:right">Amount</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLM-BKK-001</td>
+<td>BKK</td>
+<td style="text-align:right">12,500.00</td>
+<td>NEW</td>
+</tr>
+<tr>
+<td>CLM-BKK-002</td>
+<td>BKK</td>
+<td style="text-align:right">28,000.00</td>
+<td>REVIEW</td>
+</tr>
+<tr>
+<td>CLM-CM-001</td>
+<td>CM</td>
+<td style="text-align:right">8,900.00</td>
+<td>NEW</td>
+</tr>
+<tr>
+<td>CLM-CM-002</td>
+<td>CM</td>
+<td style="text-align:right">16,500.00</td>
+<td>APPROVED</td>
+</tr>
+</tbody>
+</table>
+<h3>กรองและเรียงข้อมูล</h3>
+<ol>
+<li>ใช้ช่อง Filter/Search เหนือตาราง แล้วระบุ Column/เงื่อนไขที่ต้องการ</li>
+<li>ถ้าต้องการดูงาน BKK ให้ตั้ง <code>branch</code> เท่ากับ <code>BKK</code></li>
+<li>ใช้ <strong>Sort</strong> เพื่อเรียง <code>claim_no</code> หรือ <code>amount</code></li>
+<li>เมื่อต้องการกลับมาดูทั้งหมด ให้ล้าง Filters</li>
+</ol>
+<p><strong>ผลที่ควรได้:</strong> กรอง BKK แล้วเหลือ 2 แถว การกรองใน Studio เป็นเครื่องมือค้นข้อมูล ไม่ใช่การตั้ง Security Policy</p>
+<h3>เมื่อต้องแก้ข้อมูลจริงผ่านหน้าตาราง</h3>
+<p>เลือก Cell/Row ที่ต้องการ แก้ค่า แล้วตรวจหน้าจอยืนยันหรือคิวบันทึกก่อน Commit การเปลี่ยนแปลง วิธี Save ขึ้นกับการเปิดใช้ Row Edit Queue ของ Studio ให้ Refresh และ Query แถวนั้นซ้ำเพื่อยืนยัน</p>
+<p>สำหรับการฝึกแก้ข้อมูลตามคู่มือนี้ ให้ใช้ Transaction แบบ <code>ROLLBACK</code> ในบท 5 แทน เพื่อไม่เปลี่ยนข้อมูลตั้งต้นที่การทดสอบ API คาดหวัง</p>
+</section>
+<section class="chapter"><h2 id="chapter-5">5. ใช้ SQL Editor อย่างเป็นลำดับ</h2>
+<p><strong>ทำใน:</strong> Browser / SQL Editor | <strong>Role:</strong> <code>postgres</code></p>
+<h3>เปิด Query ใหม่และอ่านข้อมูล</h3>
+<ol>
+<li>เปิด <strong>SQL Editor</strong></li>
+<li>กดปุ่ม <strong>+ / New query</strong></li>
+<li>ตรวจ Role ที่มุมบนขวาว่าเป็น <code>postgres</code></li>
+<li>วาง SQL ด้านล่างทั้ง Block แล้วกด <strong>Run</strong> หรือ Shortcut ที่ปุ่มแสดง เช่น <code>Cmd+Enter</code> บน macOS</li>
+</ol>
+<pre><code class="language-sql">-- START: ตรวจข้อมูล Claims ทั้งหมด
+SELECT claim_no, branch, amount, status
+FROM public.claimsure_claims
+ORDER BY claim_no;
+-- END
+</code></pre>
+<p><img src="images/02-sql-editor.png" alt="SQL Editor แสดงผล Query"></p>
+<p><strong>ภาพ 3:</strong> ผลลัพธ์อยู่ด้านล่าง ต้องเห็น 4 แถว ถ้า Claim Number ถูกตัด ให้ลากขอบหัว Column <code>claim_no</code> ให้กว้างขึ้น</p>
+<h3>Query งานที่ต้อง Review</h3>
+<pre><code class="language-sql">-- START: อ่านอย่างเดียว
+SELECT claim_no, amount, status
+FROM public.claimsure_claims
+WHERE branch = 'BKK'
+  AND status = 'REVIEW'
+ORDER BY claim_no;
+-- END
+</code></pre>
+<p><strong>ผลตั้งต้น:</strong> CLM-BKK-002 จำนวนเงิน 28,000.00</p>
+<h3>ฝึก UPDATE โดยคืนค่าท้าย Block</h3>
+<p>ให้เลือกและรัน <strong>ทั้ง Block</strong> ตั้งแต่ <code>BEGIN</code> ถึง <code>ROLLBACK</code> ไม่รันค้างไว้เพียงครึ่งเดียว:</p>
+<pre><code class="language-sql">-- START: ทดลองแก้ใน Transaction แล้วคืนค่า
+BEGIN;
+
+UPDATE public.claimsure_claims
+SET status = 'REVIEW'
+WHERE claim_no = 'CLM-BKK-001'
+RETURNING claim_no, status;
+
+ROLLBACK;
+-- END
+</code></pre>
+<p><code>RETURNING</code> แสดงค่าระหว่าง Transaction เป็น <code>REVIEW</code> ส่วน <code>ROLLBACK</code> คืนข้อมูล หลังจากนั้นให้รัน SELECT แถวดังกล่าวอีกครั้ง ต้องกลับเป็น <code>NEW</code> ถ้ามี Error แล้ว Session ค้างใน Transaction ให้รัน <code>ROLLBACK;</code> ก่อนเริ่มงานใหม่</p>
+<h3>สร้าง Table/Policies เมื่อทำแบบ Manual</h3>
+<p>ใช้ไฟล์ <code>01-claims-schema.sql</code> <strong>ทั้งไฟล์</strong> ก่อนสร้าง Claims ตามด้วยการสร้าง Auth Users ในบท 6 และรัน <code>02-demo-claims.sql</code> ทั้งไฟล์ตามลำดับ หากรัน <code>seed</code> แล้วไม่ต้องสร้างซ้ำเพื่อใช้งานตามบทนี้</p>
+</section>
+<section class="chapter"><h2 id="chapter-6">6. สร้างและดูแล Auth Users</h2>
+<p><strong>ทำใน:</strong> Browser / Authentication | <strong>บัญชี:</strong> Dashboard Admin</p>
+<h3>ตรวจ Users ที่มีอยู่</h3>
+<p>เปิด <strong>Authentication &gt; Users</strong> ต้องเห็น Demo Users สองรายดังภาพ:</p>
+<p><img src="images/03-auth-users.png" alt="รายการ Auth Users จำลอง"></p>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>เป็นผู้รับผิดชอบข้อมูลชุดใด</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adjuster.bkk@claimsure.example.com</code></td>
+<td>CLM-BKK-001 และ CLM-BKK-002</td>
+</tr>
+<tr>
+<td><code>adjuster.cm@claimsure.example.com</code></td>
+<td>CLM-CM-001 และ CLM-CM-002</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ภาพ 4:</strong> UID เป็น UUID ของ Auth User ที่นำไปใช้ใน <code>adjuster_id</code> ไม่ใช่ชื่อ Database Role ตัวอย่างนี้จำกัดสิทธิ์ราย User ไม่ใช่สิทธิ์ร่วมทั้ง Branch</p>
+<h3>เพิ่ม User ใหม่จาก Studio</h3>
+<ol>
+<li>กด <strong>Add user &gt; Create new user</strong></li>
+<li>ใส่ Email ที่ต้องการใช้ทดสอบ และ Password สำหรับ User นั้น</li>
+<li>ใน Lab ให้เปิด <strong>Auto confirm user?</strong> เพื่อสร้างบัญชีที่ยืนยันแล้ว โดยไม่ต้องส่ง Email</li>
+<li>ตรวจข้อมูลแล้วกด <strong>Create user</strong></li>
+<li>กลับรายการ Users และตรวจว่า Email/UID ใหม่ปรากฏ</li>
+</ol>
+<p><img src="images/08-user-guide-create-user.png" alt="ฟอร์ม Create new user"></p>
+<p><strong>ภาพ 5:</strong> ภาพเป็นฟอร์มว่าง ไม่มี Password จริงของระบบ หลีกเลี่ยงการสร้าง Email เดิมซ้ำ ถ้าเป็น Demo Users ที่มีอยู่แล้วให้เปิดดูข้อมูลเดิม</p>
+<h3>เมื่อ User ใหม่ยังไม่เห็น Claims</h3>
+<p>เป็นผลปกติเพราะยังไม่มีแถวที่ <code>adjuster_id</code> ตรงกับ UID ของคนนั้น ให้ Admin สร้างหรือกำหนดแถวธุรกิจให้ตรงกับ User ที่ถูกต้อง แล้วทดสอบด้วย User JWT ใหม่ตามบท 8</p>
+<h3>Password และการลบ User</h3>
+<ul>
+<li>Demo Users ใช้ Password ที่เก็บใน <code>DEMO_PASSWORD</code> ของ <code>.env</code> อย่านำ Dashboard Password ไปใช้ Sign-in แทน</li>
+<li>การส่ง Invitation หรือ Reset Password Email ต้องตั้ง SMTP จริง ชุด Lab นี้ยังไม่ได้ตั้ง Email Delivery</li>
+<li><code>seed</code> ตั้ง Password ของ Demo Users กลับเป็น <code>DEMO_PASSWORD</code> และคืนข้อมูล Demo จึงใช้เฉพาะเมื่อตั้งใจ Reset Demo</li>
+<li>หากจะลบ User ให้ตรวจแถวใน <code>claimsure_claims</code> ที่อ้างถึง UID ก่อน Table นี้มี Foreign Key จึงอาจปฏิเสธการลบขณะที่ยังมี Claims อ้างถึง</li>
+</ul>
+</section>
+<section class="chapter"><h2 id="chapter-7">7. ตรวจและเข้าใจ RLS Policies</h2>
+<p><strong>ทำใน:</strong> Browser / Database &gt; Policies หรือ SQL Editor | <strong>บัญชี:</strong> Dashboard Admin</p>
+<p>เปิด <strong>Database &gt; Policies</strong> เลือก Schema <code>public</code> แล้วค้นหา <code>claimsure_claims</code> ตรวจว่าปุ่มแสดง <strong>Disable RLS</strong> ซึ่งหมายความว่า RLS กำลังเปิดอยู่ ไม่ต้องกดปุ่มนี้</p>
+<p><img src="images/05-rls-policies.png" alt="Policies ของ claimsure_claims"></p>
+<p><strong>ภาพ 6:</strong> มี 3 Policies สำหรับ Role <code>authenticated</code></p>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Operation</th>
+<th>กฎที่บังคับ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>claims_read_own</code></td>
+<td>SELECT</td>
+<td>อ่านเฉพาะแถวที่ <code>adjuster_id = auth.uid()</code></td>
+</tr>
+<tr>
+<td><code>claims_insert_own</code></td>
+<td>INSERT</td>
+<td>แถวใหม่ต้องระบุ Owner เป็น User ที่ Sign-in</td>
+</tr>
+<tr>
+<td><code>claims_update_own</code></td>
+<td>UPDATE</td>
+<td>เลือกเฉพาะแถวของตน และค่าหลังแก้ต้องยังเป็นของตน</td>
+</tr>
+</tbody>
+</table>
+<h3>แยก Grants กับ Policies</h3>
+<p>Table Grants บอกว่า Role ใช้ Operation ใดได้ ส่วน RLS บอกว่า Operation นั้นใช้กับแถวใด ในชุดนี้:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Table Grants</th>
+<th>ผลของ RLS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>anon</code></td>
+<td>SELECT</td>
+<td>ไม่มี Policy อนุญาต จึงอ่านได้ศูนย์แถว</td>
+</tr>
+<tr>
+<td><code>authenticated</code></td>
+<td>SELECT, INSERT, UPDATE</td>
+<td>เข้าถึงเฉพาะแถวของตน</td>
+</tr>
+<tr>
+<td><code>service_role</code></td>
+<td>Admin Operations</td>
+<td>ใช้ข้าม RLS จึงเก็บ Key เฉพาะฝั่ง Server</td>
+</tr>
+</tbody>
+</table>
+<p>ไม่มี DELETE Grant ให้ผู้ใช้แอปใน Lab นี้</p>
+<p>ตรวจ Policy ด้วย Query แบบอ่านอย่างเดียวได้:</p>
+<pre><code class="language-sql">SELECT policyname, cmd, roles, qual, with_check
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND tablename = 'claimsure_claims'
+ORDER BY policyname;
+</code></pre>
+<h3>ทำไมภาพมีป้าย API DISABLED</h3>
+<p>Studio รุ่นที่ใช้แสดงป้าย <code>API DISABLED</code> พร้อมข้อความ <code>custom Data API permissions</code> เมื่อ Grants ไม่ครบชุดมาตรฐาน แม้บาง Operations ยังเรียกได้ ชุดนี้จำกัด Grants โดยตั้งใจ ให้ตรวจ Grants และผล HTTP จริงในบท 8 ไม่เพิ่ม <code>GRANT ALL</code> ให้ Anonymous เพื่อเปลี่ยนป้าย</p>
+<h3>ก่อนแก้ Policy</h3>
+<p>บันทึกนิยามเดิม, ระบุ User/Operation ที่ต้องอนุญาต และทดสอบทั้งกรณีของตนกับของคนอื่น ใช้ <code>USING</code> ตรวจแถวที่เข้าถึง และ <code>WITH CHECK</code> ตรวจค่าหลัง INSERT/UPDATE การปิด RLS เพื่อให้ Request ผ่านจะเปลี่ยนขอบเขตการเข้าถึงข้อมูล</p>
+</section>
+<section class="chapter"><h2 id="chapter-8">8. ใช้ Data API และพิสูจน์สิทธิ์</h2>
+<p><strong>ทำใน:</strong> Terminal หรือ HTTP Client | <strong>ตัวตนที่ทดสอบ:</strong> Auth User ของแอป</p>
+<h3>ทดสอบครบชุดด้วยคำสั่งเดียว</h3>
+<pre><code class="language-bash">python3 labs/supabase/lab.py verify --extended
+</code></pre>
+<p><strong>ผลที่ควรได้:</strong> <code>PASS</code> 18 กรณีเมื่อใช้ <code>--extended</code> รายละเอียดถูกเขียนลง <code>verification.json</code> โดยไม่บันทึก Passwords หรือ Tokens การตรวจสร้างแถวชั่วคราวของตนและลบเมื่อจบ เพื่อรักษาข้อมูล Demo 4 แถว</p>
+<table>
+<thead>
+<tr>
+<th>กรณี</th>
+<th>ผลตั้งต้นที่ถูกต้อง</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Anonymous อ่าน Claims</td>
+<td>HTTP 200 และ <code>[]</code></td>
+</tr>
+<tr>
+<td>BKK อ่าน Claims</td>
+<td>เห็นเฉพาะ 2 แถวของ BKK User</td>
+</tr>
+<tr>
+<td>CM อ่าน Claims</td>
+<td>เห็นเฉพาะ 2 แถวของ CM User</td>
+</tr>
+<tr>
+<td>BKK กรองหา Claims ของ CM</td>
+<td>HTTP 200 และ <code>[]</code></td>
+</tr>
+<tr>
+<td>BKK INSERT โดยใส่ CM เป็น Owner</td>
+<td>HTTP 403</td>
+</tr>
+<tr>
+<td>BKK INSERT โดยใส่ตนเป็น Owner</td>
+<td>HTTP 201</td>
+</tr>
+<tr>
+<td>BKK เปลี่ยน Owner ของแถวตนเป็น CM</td>
+<td>HTTP 403</td>
+</tr>
+<tr>
+<td>Admin อ่าน Private Example File</td>
+<td>HTTP 200 และเนื้อหาตรงกับ Fixture</td>
+</tr>
+<tr>
+<td>Anonymous อ่าน Private Example File</td>
+<td>ถูกปฏิเสธ อาจตอบ 400/401/403/404</td>
+</tr>
+<tr>
+<td>เรียก <code>claimsure-health</code> ด้วย JWT ถูกต้อง</td>
+<td>HTTP 200</td>
+</tr>
+</tbody>
+</table>
+<h3>เข้าใจ Request ก่อนส่งเอง</h3>
+<p>ตั้งตัวแปรใน HTTP Client โดยอ่านค่าจาก <code>.env</code> ของตนเอง:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>ค่า</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base_url</code></td>
+<td><code>http://127.0.0.1:18000</code> หรือ URL ที่ตั้งไว้</td>
+</tr>
+<tr>
+<td><code>anon_key</code></td>
+<td><code>ANON_KEY</code> ของชุดนี้</td>
+</tr>
+<tr>
+<td><code>demo_email</code></td>
+<td>Email ของ BKK หรือ CM User</td>
+</tr>
+<tr>
+<td><code>demo_password</code></td>
+<td><code>DEMO_PASSWORD</code> สำหรับ Demo Users</td>
+</tr>
+</tbody>
+</table>
+<p>ตัวอย่างต่อไปนี้เป็นรูปแบบ Request สำหรับ HTTP Client ให้แทน <code>{{...}}</code> ด้วย Variables จริง ไม่ใช่คำสั่งที่ Paste ลง psql</p>
+<p><strong>ขั้น A: Sign-in เพื่อรับ User Access Token</strong></p>
+<pre><code class="language-http">POST {{base_url}}/auth/v1/token?grant_type=password
+apikey: {{anon_key}}
+Content-Type: application/json
+
+{
+  &quot;email&quot;: &quot;{{demo_email}}&quot;,
+  &quot;password&quot;: &quot;{{demo_password}}&quot;
+}
+</code></pre>
+<p>เมื่อได้ HTTP 200 ให้นำค่า <code>access_token</code> ไปใช้เป็น <code>user_access_token</code> ส่วน <code>user.id</code> คือ UID ที่ Policies ใช้เทียบกับ <code>adjuster_id</code> เก็บ Access/Refresh Tokens ไว้เป็นความลับ</p>
+<p><strong>ขั้น B: อ่าน Claims ด้วยตัวตนของ User</strong></p>
+<pre><code class="language-http">GET {{base_url}}/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&amp;order=claim_no
+apikey: {{anon_key}}
+Authorization: Bearer {{user_access_token}}
+</code></pre>
+<p>Sign-in ด้วย BKK จะได้สองแถวของ BKK เมื่อลอง Sign-in เป็น CM แล้วใช้ Token ใหม่ต้องได้สองแถวของ CM</p>
+<p><strong>ขั้น C: ลองกรองหาข้อมูลของอีกคน</strong></p>
+<p>เพิ่ม <code>&amp;branch=eq.CM</code> ใน URL ขณะใช้ Token ของ BKK ต้องได้ <code>[]</code> ไม่ใช่ข้อมูลของ CM HTTP 200 เพียงอย่างเดียวจึงยังบอกไม่ได้ว่าได้ข้อมูลที่ต้องการหรือไม่ ต้องดู Response Body ด้วย</p>
+<p><code>ANON_KEY</code> ใช้ระบุ API Access ของ Project ส่วน User JWT ใช้ระบุตัวตน Request นี้ไม่ต้องใช้ Dashboard Basic Auth หรือ <code>POSTGRES_PASSWORD</code> ห้ามนำ <code>SERVICE_ROLE_KEY</code> ไปใส่ Frontend เพื่อเลี่ยง RLS</p>
+</section>
+<section class="chapter"><h2 id="chapter-9">9. จัดการไฟล์ด้วย Private Storage</h2>
+<p><strong>ทำใน:</strong> Browser / Storage | <strong>บัญชี:</strong> Dashboard Admin</p>
+<h3>เปิด Bucket และอัปโหลดไฟล์</h3>
+<ol>
+<li>เปิด <strong>Storage &gt; Files</strong></li>
+<li>เลือก Bucket <strong>claim-documents</strong> ถ้า <code>seed --extended</code> แล้วจะมีอยู่ก่อน</li>
+<li>ตรวจว่ามี <code>example-claim.txt</code></li>
+<li>ถ้าต้องการอัปโหลดไฟล์ทดสอบเพิ่มเติม ให้กด <strong>Upload files</strong> และเลือกไฟล์ข้อมูลจำลอง</li>
+<li>ตรวจว่าชื่อไฟล์ปรากฏในรายการหลัง Upload สำเร็จ</li>
+</ol>
+<p><img src="images/06-private-storage.png" alt="ไฟล์ใน claim-documents"></p>
+<p><strong>ภาพ 7:</strong> ไฟล์ตั้งต้นมาจาก <code>labs/supabase/fixtures/example-claim.txt</code> ถ้าจะรันตามข้อมูลตั้งต้น ใช้ชื่อและเนื้อหาไฟล์นี้ตามเดิม</p>
+<h3>สร้าง Bucket ใหม่เมื่อทำแบบ Manual</h3>
+<p>เลือก <strong>New bucket</strong>, ใส่ชื่อที่ไม่ซ้ำ, ตั้ง <strong>Public bucket = OFF</strong> แล้วสร้าง Bucket ก่อน Upload หาก Bucket <code>claim-documents</code> มีอยู่แล้วให้เปิดของเดิม</p>
+<h3>ตรวจว่า Bucket ยังเป็น Private</h3>
+<ol>
+<li>เปิด Bucket <code>claim-documents</code></li>
+<li>เลือก <strong>Edit bucket &gt; Bucket settings</strong></li>
+<li>ตรวจว่า <strong>Public bucket</strong> ปิดอยู่ดังภาพ</li>
+<li>ถ้าไม่ได้แก้ค่า ให้กด <strong>Cancel</strong></li>
+</ol>
+<p><img src="images/07-storage-settings.png" alt="Bucket settings แสดง Public bucket ปิดอยู่"></p>
+<p><strong>ภาพ 8:</strong> การปิด Public ไม่ได้แปลว่า Auth User ทุกคนอ่านไฟล์ได้ ผู้ใช้แอปยังต้องมี Storage Policies หรือใช้ Signed URL ที่ออกหลังตรวจสิทธิ์แล้ว</p>
+<h3>แยกสิทธิ์ไฟล์ออกจากสิทธิ์ Claims</h3>
+<p>Policy บน <code>public.claimsure_claims</code> ไม่ได้ให้สิทธิ์บน <code>storage.objects</code> โดยอัตโนมัติ ชุด Lab ให้ Admin จัดการไฟล์และทดสอบว่า Anonymous ดาวน์โหลดไม่ได้ ถ้าจะให้ผู้ใช้แอป Upload/Download ให้กำหนด Object Path และ Policies เพิ่มตามงานจริง</p>
+<p>อย่าลบแถวจาก <code>storage.objects</code> โดยตรงเพื่อจัดการไฟล์ ให้ใช้ Storage UI หรือ Storage API เพื่อให้ Metadata และไฟล์สอดคล้องกัน</p>
+</section>
+<section class="chapter"><h2 id="chapter-10">10. เชื่อมต่อด้วย psql หรือ DBeaver</h2>
+<h3>ใช้ psql ภายใน Container</h3>
+<p><strong>ทำใน:</strong> Terminal | <strong>Database Role:</strong> <code>postgres</code></p>
+<pre><code class="language-bash">python3 labs/supabase/lab.py psql
+</code></pre>
+<p>เมื่อเห็น Prompt ของ psql จึงค่อยรัน:</p>
+<pre><code class="language-sql">SELECT current_user, current_database();
+SELECT count(*) FROM public.claimsure_claims;
+</code></pre>
+<p><strong>ผลที่ควรได้:</strong> User <code>postgres</code>, Database <code>postgres</code> และ Count เท่ากับ 4 สำหรับข้อมูลตั้งต้น</p>
+<p>คำสั่ง psql ที่ใช้บ่อย:</p>
+<pre><code class="language-text">\conninfo       ดู Connection ปัจจุบัน
+\dt public.*    ดู Tables ใน Schema public
+\c postgres     Reconnect ไป Database postgres
+\q              ออกจาก psql กลับ Terminal
+</code></pre>
+<h3>เชื่อมจากเครื่อง Host ผ่าน Session Pooler</h3>
+<pre><code class="language-bash">psql -X -h 127.0.0.1 -p 15480 -U postgres.claimsure -d postgres -W
+</code></pre>
+<p>เมื่อถาม Password ให้ใช้ <code>POSTGRES_PASSWORD</code> ถ้ากำหนด Ports หรือ Tenant ID ใหม่ให้แทนค่าตาม <code>.env</code></p>
+<table>
+<thead>
+<tr>
+<th>ช่องใน DBeaver</th>
+<th>Session Mode</th>
+<th>Transaction Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host</td>
+<td><code>127.0.0.1</code></td>
+<td><code>127.0.0.1</code></td>
+</tr>
+<tr>
+<td>Port</td>
+<td><code>15480</code></td>
+<td><code>16543</code></td>
+</tr>
+<tr>
+<td>Database</td>
+<td><code>postgres</code></td>
+<td><code>postgres</code></td>
+</tr>
+<tr>
+<td>Username</td>
+<td><code>postgres.claimsure</code></td>
+<td><code>postgres.claimsure</code></td>
+</tr>
+<tr>
+<td>Password</td>
+<td><code>POSTGRES_PASSWORD</code></td>
+<td><code>POSTGRES_PASSWORD</code></td>
+</tr>
+</tbody>
+</table>
+<p>เริ่มงาน SQL ที่ต้องพึ่ง Session State ด้วย Session Mode ก่อน Transaction Mode อาจคืน Backend Connection ให้ Pool หลังจบ Transaction จึงไม่ควรสมมติว่า Session Settings จะอยู่บน Connection เดิมตลอด</p>
+</section>
+<section class="chapter"><h2 id="chapter-11">11. เปิด ปิด และปรับค่าระบบ</h2>
+<h3>คำสั่งงานประจำ</h3>
+<table>
+<thead>
+<tr>
+<th>งาน</th>
+<th>คำสั่งจาก root ของ repository</th>
+<th>ผลกับข้อมูล</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ดูสถานะ</td>
+<td><code>python3 labs/supabase/lab.py status</code></td>
+<td>อ่านอย่างเดียว</td>
+</tr>
+<tr>
+<td>เปิด/เปิดใหม่</td>
+<td><code>python3 labs/supabase/lab.py up</code></td>
+<td>ใช้ Volumes เดิม</td>
+</tr>
+<tr>
+<td>รอความพร้อม</td>
+<td><code>python3 labs/supabase/lab.py wait</code></td>
+<td>ไม่แก้ข้อมูล</td>
+</tr>
+<tr>
+<td>หยุดชั่วคราว</td>
+<td><code>python3 labs/supabase/lab.py stop</code></td>
+<td>เก็บ Containers และ Volumes</td>
+</tr>
+<tr>
+<td>ถอด Containers/Network</td>
+<td><code>python3 labs/supabase/lab.py down</code></td>
+<td>Named Volumes ยังอยู่</td>
+</tr>
+<tr>
+<td>คืน Demo</td>
+<td><code>python3 labs/supabase/lab.py seed --extended</code></td>
+<td>ปรับข้อมูลตัวอย่างและ Demo Passwords</td>
+</tr>
+</tbody>
+</table>
+<h3>แก้ค่าที่ไหน และทำอย่างไรให้มีผล</h3>
+<p>ค่าของชุดนี้อยู่ใน <code>labs/supabase/.env</code> ให้แก้ไฟล์นี้โดยคง Secrets เดิม แล้วรัน <code>config</code> และ <code>up</code> เพื่อให้ Compose Recreate Services ที่ Environment เปลี่ยน การ <code>restart</code> อย่างเดียวไม่โหลด Environment ใหม่</p>
+<table>
+<thead>
+<tr>
+<th>ค่าที่แก้</th>
+<th>ตัวแปร</th>
+<th>สิ่งที่ต้องทำร่วมกัน</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host Port ของ Studio/API</td>
+<td><code>API_GW_HTTP_PORT</code></td>
+<td>ปรับ <code>SUPABASE_PUBLIC_URL</code> และ <code>API_EXTERNAL_URL</code> ให้ตรง แล้ว <code>up</code></td>
+</tr>
+<tr>
+<td>Host Port ของ Session Pooler</td>
+<td><code>DB_SESSION_PORT</code></td>
+<td>เปลี่ยน Port ของ SQL Client แล้ว <code>up</code></td>
+</tr>
+<tr>
+<td>Host Port ของ Transaction Pooler</td>
+<td><code>DB_TRANSACTION_PORT</code></td>
+<td>เปลี่ยน Port ของ SQL Client แล้ว <code>up</code></td>
+</tr>
+<tr>
+<td>URL ของ Frontend/Redirect</td>
+<td><code>SITE_URL</code>, <code>ADDITIONAL_REDIRECT_URLS</code></td>
+<td>ให้ตรงกับ Application แล้ว <code>up</code></td>
+</tr>
+<tr>
+<td>SMTP</td>
+<td><code>SMTP_*</code></td>
+<td>ใส่ค่าจาก Mail Provider และทดสอบ Email Delivery หลัง <code>up</code></td>
+</tr>
+</tbody>
+</table>
+<p>คง <code>POSTGRES_PORT=5432</code> ไว้เป็น Port ภายใน Network อย่าเปลี่ยนค่านี้เพียงเพื่อแก้ Host Port ชนกัน</p>
+<p>สำหรับ <code>POSTGRES_PASSWORD</code>, JWT Signing Keys และ Encryption Keys ให้ทำตามขั้นตอนเปลี่ยน Credential ของ Upstream โดยเฉพาะ การแก้ Environment อย่างเดียวไม่เปลี่ยน Passwords/Keys ที่ข้อมูลเดิมใช้อยู่</p>
+</section>
+<section class="chapter"><h2 id="chapter-12">12. เก็บข้อมูลและสำรองก่อนเปลี่ยนระบบ</h2>
+<h3>สิ่งที่ต้องเก็บเป็นชุดเดียวกัน</h3>
+<table>
+<thead>
+<tr>
+<th>รายการ</th>
+<th>เก็บที่ไหนในชุดนี้</th>
+<th>เหตุผล</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tables, Auth Records, Policies</td>
+<td>Named Volume <code>db-data</code></td>
+<td>เป็นข้อมูลและโครงสร้างหลัก</td>
+</tr>
+<tr>
+<td>Database Encryption Configuration</td>
+<td>Named Volume <code>db-config</code></td>
+<td>ใช้ร่วมกับข้อมูล Database</td>
+</tr>
+<tr>
+<td>Storage Objects</td>
+<td>Named Volume <code>storage-data</code></td>
+<td>ไฟล์จริงไม่อยู่ใน Table Dump ทั้งหมด</td>
+</tr>
+<tr>
+<td>Deployment Secrets</td>
+<td><code>labs/supabase/.env</code></td>
+<td>ต้องสอดคล้องกับข้อมูล/Encryption Keys</td>
+</tr>
+<tr>
+<td>Functions และ Snippets</td>
+<td><code>labs/supabase/volumes/</code></td>
+<td>เป็น Source และ SQL ที่บันทึกไว้</td>
+</tr>
+</tbody>
+</table>
+<p>ชื่อจริงของ Named Volume มี Compose Project Name นำหน้า เช่น <code>claimsure-supabase_db-data</code> การ <code>stop</code> หรือ <code>down</code> ของ Helper ไม่ลบ Named Volumes ส่วน <code>down -v</code> หรือการลบ Volume เองอาจทำให้ข้อมูลหาย</p>
+<h3>ตัวอย่าง Dump เฉพาะ Table Lab</h3>
+<p>คำสั่งนี้สำรองเฉพาะ <code>claimsure_claims</code> เพื่อฝึกดู Archive ไม่ใช่ Backup ของ Supabase Project ทั้งชุด</p>
+<p><strong>ทำใน:</strong> Terminal จาก <code>labs/supabase</code></p>
+<pre><code class="language-bash">cd labs/supabase
+mkdir -p artifacts/backups
+
+docker compose --env-file .env -f compose.yaml exec -T db \
+  pg_dump -U postgres -d postgres -Fc \
+  -t public.claimsure_claims \
+  &gt; artifacts/backups/claimsure-claims.dump
+
+# แสดงสารบัญของ Archive โดยยังไม่ Restore
+docker compose --env-file .env -f compose.yaml exec -T db \
+  pg_restore --list &lt; artifacts/backups/claimsure-claims.dump
+
+# กลับ root เมื่อต้องใช้ Helper ตามบทอื่น
+cd ../..
+</code></pre>
+<p>ตรวจ Exit Status และสารบัญทุกครั้ง ไฟล์ Dump ที่มีขนาดมากกว่าศูนย์อย่างเดียวไม่ได้ยืนยันว่า Restore ได้ การนำ Table นี้ไป Restore ต้องมี Auth User UUID ที่อ้างถึงอยู่ด้วย</p>
+<p>ก่อน Upgrade/ย้ายเครื่อง ให้เตรียม Backup ที่ครอบคลุม Database, Storage และ Secrets พร้อมทดสอบ Restore แยกจากระบบต้นทาง ไม่คัดลอก PGDATA ขณะ Database ทำงานเพื่อถือเป็น Backup ที่สมบูรณ์</p>
+</section>
+<section class="chapter"><h2 id="chapter-13">13. แก้ปัญหาที่พบบ่อย</h2>
+<h3>ดู Logs ให้ตรง Service</h3>
+<p><strong>ทำใน:</strong> Terminal จาก <code>labs/supabase</code></p>
+<pre><code class="language-bash">cd labs/supabase
+docker compose --env-file .env -f compose.yaml ps
+docker compose --env-file .env -f compose.yaml logs --tail=80 db
+docker compose --env-file .env -f compose.yaml logs --tail=80 auth rest meta
+docker compose --env-file .env -f compose.yaml logs --tail=80 api-gw studio
+cd ../..
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>อาการ</th>
+<th>ตรวจอะไร</th>
+<th>แนวทางแก้</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>เข้า Studio ไม่ได้</td>
+<td>Docker/Services, URL, SSH Tunnel</td>
+<td>รัน <code>status</code> แล้ว <code>up</code>; ตรวจ Host Port</td>
+</tr>
+<tr>
+<td>Browser ถาม Basic Auth ซ้ำ</td>
+<td>Dashboard Username/Password</td>
+<td>ใช้ค่าจาก <code>.env</code>; ทดลอง Incognito ถ้า Browser จำค่าเก่า</td>
+</tr>
+<tr>
+<td><code>port is already allocated</code></td>
+<td>Host Ports ชนโปรแกรมอื่น</td>
+<td>เปลี่ยน Host Ports และ URLs ที่เกี่ยวข้อง แล้ว <code>up</code></td>
+</tr>
+<tr>
+<td>Auth Sign-in ไม่ผ่าน</td>
+<td>Email, Password, Confirmed State</td>
+<td>ใช้ <code>DEMO_PASSWORD</code> สำหรับ Demo และตรวจ Users; <code>seed</code> เฉพาะเมื่อต้องการ Reset Demo</td>
+</tr>
+<tr>
+<td><code>relation does not exist</code></td>
+<td>รัน Schema แล้วหรือไม่, Database/Schema ถูกชุดหรือไม่</td>
+<td>ตรวจ Connection; ใช้ SQL 01 ทั้งไฟล์ก่อน SQL 02</td>
+</tr>
+<tr>
+<td>Foreign Key Error</td>
+<td><code>adjuster_id</code> มีอยู่ใน <code>auth.users</code> หรือไม่</td>
+<td>สร้าง Auth User ก่อน และใช้ UID ให้ตรง</td>
+</tr>
+<tr>
+<td>Data API ได้ 401</td>
+<td>API Key, JWT, Expiry, Signing Key</td>
+<td>Sign-in ใหม่และตรวจ Keys ของ Project เดียวกัน</td>
+</tr>
+<tr>
+<td>Data API ได้ <code>[]</code></td>
+<td>User มีแถวของตนหรือไม่, Policy อนุญาตหรือไม่</td>
+<td>ตรวจ <code>adjuster_id</code>, JWT ของคนที่ใช้ และ RLS</td>
+</tr>
+<tr>
+<td>INSERT/UPDATE ได้ 403</td>
+<td>Grants และ <code>WITH CHECK</code></td>
+<td>ตรวจว่ากำลังเขียนให้ Owner ที่ตรงกับ User ไม่ใช้ Service Key กลบปัญหา</td>
+</tr>
+<tr>
+<td>Studio เห็น 4 แถว แต่ API เห็น 2</td>
+<td>Admin ต่างจาก Application User</td>
+<td>เป็นผลที่ตั้งใจของ RLS ใน Demo</td>
+</tr>
+<tr>
+<td>หน้า Policies มี <code>API DISABLED</code></td>
+<td>ข้อความ Custom Grants และผล HTTP</td>
+<td>ดูคำอธิบายในบท 7 ไม่เปิดสิทธิ์เกินจำเป็น</td>
+</tr>
+<tr>
+<td>Private File ดาวน์โหลดไม่ได้</td>
+<td>ตัวตน, Object Path, Storage Policies</td>
+<td>ตรวจผ่าน Storage API/UI และออกแบบสิทธิ์ไฟล์เพิ่มเติม</td>
+</tr>
+<tr>
+<td><code>/functions/v1/hello</code> ตอบ <code>INVALID_API_KEY</code></td>
+<td>Example ของ Upstream ใช้ New Opaque Keys</td>
+<td>ชุดนี้มี <code>claimsure-health</code> สำหรับ Legacy HS256 Keys</td>
+</tr>
+<tr>
+<td><code>verify</code> ไม่ผ่านหลังแก้ข้อมูล</td>
+<td>ข้อมูล Demo ต่างจากค่าที่ Test คาดไว้</td>
+<td>ตรวจการเปลี่ยนแปลงก่อน; <code>seed</code> เฉพาะเมื่อตั้งใจคืน Demo</td>
+</tr>
+</tbody>
+</table>
+<p>หากต้องส่ง Logs ให้ผู้อื่น ให้ตัด Passwords, Tokens, Connection Strings และข้อมูลจริงออกก่อน ไม่ส่ง <code>.env</code> ทั้งไฟล์</p>
+</section>
+<section class="chapter"><h2 id="chapter-14">14. ตารางใช้งานด่วนและเอกสารอ้างอิง</h2>
+<h3>เลือกทางทำงานตามเป้าหมาย</h3>
+<table>
+<thead>
+<tr>
+<th>เป้าหมาย</th>
+<th>เปิดที่ไหน/ใช้คำสั่งไหน</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>เข้า Dashboard</td>
+<td><code>http://127.0.0.1:18000</code> + Dashboard Basic Auth</td>
+</tr>
+<tr>
+<td>ค้นหา Claim</td>
+<td>Table Editor &gt; public &gt; claimsure_claims</td>
+</tr>
+<tr>
+<td>รัน SELECT/ทดลอง Transaction</td>
+<td>SQL Editor โดยตรวจ Role ก่อน</td>
+</tr>
+<tr>
+<td>เพิ่มตัวตนของผู้ใช้แอป</td>
+<td>Authentication &gt; Users &gt; Add user</td>
+</tr>
+<tr>
+<td>ตรวจสิทธิ์แถว</td>
+<td>Database &gt; Policies และทดสอบ User JWT</td>
+</tr>
+<tr>
+<td>เก็บไฟล์ Claim</td>
+<td>Storage &gt; Files &gt; claim-documents</td>
+</tr>
+<tr>
+<td>ทดสอบครบชุด</td>
+<td><code>python3 labs/supabase/lab.py verify --extended</code></td>
+</tr>
+<tr>
+<td>เปิด Console SQL</td>
+<td><code>python3 labs/supabase/lab.py psql</code></td>
+</tr>
+<tr>
+<td>หยุดงานวันนี้</td>
+<td><code>python3 labs/supabase/lab.py stop</code></td>
+</tr>
+</tbody>
+</table>
+<h3>คำศัพท์ที่ควรจำ</h3>
+<table>
+<thead>
+<tr>
+<th>คำศัพท์</th>
+<th>ความหมายในคู่มือนี้</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Studio</td>
+<td>หน้าจอ Admin ของ Supabase Project</td>
+</tr>
+<tr>
+<td>Auth User</td>
+<td>ตัวตนของผู้ใช้ Application</td>
+</tr>
+<tr>
+<td>Database Role</td>
+<td>Identity/ชุดสิทธิ์ภายใน PostgreSQL</td>
+</tr>
+<tr>
+<td>JWT / Access Token</td>
+<td>Token ยืนยันตัวตนที่ API ตรวจแล้วใช้กำหนดสิทธิ์</td>
+</tr>
+<tr>
+<td>RLS</td>
+<td>กฎที่ Database ใช้เลือกและตรวจแถวตาม Role/Identity</td>
+</tr>
+<tr>
+<td><code>USING</code></td>
+<td>เงื่อนไขสำหรับแถวที่เข้าถึงได้</td>
+</tr>
+<tr>
+<td><code>WITH CHECK</code></td>
+<td>เงื่อนไขที่แถวหลัง INSERT/UPDATE ต้องผ่าน</td>
+</tr>
+<tr>
+<td>Bucket / Object</td>
+<td>กลุ่มเก็บไฟล์ / ไฟล์พร้อม Metadata</td>
+</tr>
+<tr>
+<td>Pooler</td>
+<td>ตัวกลางจัดการและใช้ Database Connections ร่วมกัน</td>
+</tr>
+</tbody>
+</table>
+<h3>เอกสารของชุด Lab</h3>
+<ul>
+<li><a href="../../../labs/supabase/README.md">วิธีติดตั้งและโครงสร้างไฟล์</a></li>
+<li><a href="README.md">Tutorial พร้อมภาพและลำดับ Lab</a></li>
+<li><a href="../../../labs/supabase/sql/01-claims-schema.sql">SQL สร้าง Table และ RLS</a></li>
+<li><a href="../../../labs/supabase/sql/02-demo-claims.sql">SQL เพิ่ม Claims ตัวอย่าง</a></li>
+<li><a href="verification.json">ผลทดสอบ API ที่บันทึกไว้</a></li>
+<li><a href="capture-manifest.json">รายละเอียดภาพ Tutorial เดิม</a></li>
+<li><a href="../../../labs/supabase/upstream.json">ข้อมูลเวอร์ชัน Upstream</a></li>
+</ul>
+<h3>แหล่งอ้างอิงทางการ</h3>
+<p>คู่มือนี้อธิบายพฤติกรรมของ Compose และ Scripts ใน repository นี้ หากจะเปลี่ยน Deployment หรือย้ายเป็น Public Service ให้ตรวจคู่มือเวอร์ชันที่ใช้ร่วมด้วย:</p>
+<ul>
+<li><a href="https://supabase.com/docs/guides/self-hosting/docker">Supabase Self-hosting with Docker</a></li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase Row Level Security</a></li>
+<li><a href="https://supabase.com/docs/guides/storage/security/access-control">Supabase Storage Access Control</a></li>
+<li><a href="https://supabase.com/docs/guides/self-hosting/accessing-postgres">การเข้าถึง PostgreSQL ของ Self-hosted Supabase</a></li>
+<li><a href="https://supabase.com/docs/guides/self-hosting/self-hosted-auth-keys">แนวทางย้ายไปใช้ New Auth/API Keys</a></li>
+</ul>
+<p>ข้อมูลตัวอย่างและภาพใช้เพื่อการเรียนรู้ ไม่มี Password, API Key หรือ Access Token จริงถูกพิมพ์ลงในคู่มือ</p>
+</section>
+</main></div><dialog aria-label="ภาพหน้าจอขนาดเต็ม"><img alt=""></dialog>
+<script>
+for(const table of document.querySelectorAll('table')){const box=document.createElement('div');box.className='table-scroll';table.replaceWith(box);box.append(table)}
+const dialog=document.querySelector('dialog');for(const image of document.querySelectorAll('main img')){image.tabIndex=0;const show=()=>{const big=dialog.querySelector('img');big.src=image.src;big.alt=image.alt;dialog.showModal()};image.addEventListener('click',show);image.addEventListener('keydown',event=>{if(event.key==='Enter')show()})}dialog.addEventListener('click',()=>dialog.close());
+for(const pre of document.querySelectorAll('pre')){const box=document.createElement('div');box.className='code-wrap';pre.replaceWith(box);box.append(pre);const button=document.createElement('button');button.className='copy';button.textContent='คัดลอก';button.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(pre.innerText);button.textContent='คัดลอกแล้ว'}catch{const range=document.createRange();range.selectNodeContents(pre);const selection=getSelection();selection.removeAllRanges();selection.addRange(range);button.textContent='เลือกข้อความแล้ว'}});box.append(button)}
+</script></body></html>

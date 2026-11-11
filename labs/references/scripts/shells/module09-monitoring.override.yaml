@@ -1,0 +1,9 @@
+# Combine with the EXISTING /opt/setup-postgres-labs/compose.yaml.
+# Only postgres-exporter is recreated; the database/Prometheus/Grafana are kept.
+services:
+  postgres-exporter:
+    command:
+      - --collector.stat_statements
+      - --extend.query-path=/etc/postgres_exporter/module09-queries.yaml
+    volumes:
+      - ./config/module09-exporter-queries.yaml:/etc/postgres_exporter/module09-queries.yaml:ro

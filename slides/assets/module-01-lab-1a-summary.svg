@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" role="img" aria-labelledby="title desc">
+<title id="title">Lab 1A: claimsure schema and related tables</title>
+<desc id="desc">The claimsure schema contains customer, policy, and claim tables. A customer can have zero or many policies; each policy belongs to one customer. A policy can have zero or many claims; each claim belongs to one policy.</desc>
+<rect x="2" y="2" width="996" height="436" rx="16" fill="#f4faff" stroke="#78cffa" stroke-width="2"/>
+<g font-family="Inter,Arial,sans-serif" fill="#18395f">
+<text x="26" y="36" font-size="23" font-weight="700" fill="#0b356b">SCHEMA  claimsure</text>
+<text x="26" y="61" font-size="16">One namespace for three related tables</text>
+<rect x="26" y="108" width="262" height="246" rx="8" fill="white" stroke="#b9e0f5"/><path d="M34 108 H280 Q288 108 288 116 V153 H26 V116 Q26 108 34 108" fill="#eaf7ff"/><text x="42" y="138" font-size="23" font-weight="700" fill="#0b356b">customer</text>
+<text x="42" y="184" font-size="16">customer_id  PK · identity</text>
+<text x="42" y="213" font-size="16">customer_code  UNIQUE</text>
+<text x="42" y="242" font-size="16">full_name  NOT NULL</text>
+<text x="42" y="271" font-size="16">email  UNIQUE</text>
+<text x="42" y="300" font-size="16">created_at  DEFAULT now()</text>
+<text x="42" y="333" font-size="14" fill="#15599a">Identifies the policyholder</text>
+<rect x="369" y="108" width="262" height="246" rx="8" fill="white" stroke="#b9e0f5"/><path d="M377 108 H623 Q631 108 631 116 V153 H369 V116 Q369 108 377 108" fill="#eaf7ff"/><text x="385" y="138" font-size="23" font-weight="700" fill="#0b356b">policy</text>
+<text x="385" y="184" font-size="16">policy_id  PK · identity</text>
+<text x="385" y="213" font-size="16">customer_id  FK → customer</text>
+<text x="385" y="242" font-size="16">policy_no  UNIQUE</text>
+<text x="385" y="271" font-size="14">product_code · starts_on · ends_on</text>
+<text x="385" y="300" font-size="16">status  CHECK</text>
+<text x="385" y="333" font-size="14" fill="#15599a">Dates: ends_on ≥ starts_on</text>
+<rect x="712" y="108" width="262" height="246" rx="8" fill="white" stroke="#b9e0f5"/><path d="M720 108 H966 Q974 108 974 116 V153 H712 V116 Q712 108 720 108" fill="#eaf7ff"/><text x="728" y="138" font-size="23" font-weight="700" fill="#0b356b">claim</text>
+<text x="728" y="184" font-size="16">claim_id  PK · identity</text>
+<text x="728" y="213" font-size="16">policy_id  FK → policy</text>
+<text x="728" y="242" font-size="16">claim_no  UNIQUE</text>
+<text x="728" y="271" font-size="16">incident_at · created_at</text>
+<text x="728" y="300" font-size="14">estimated_amount · approved_amount</text>
+<text x="728" y="333" font-size="14" fill="#15599a">Status + amounts: CHECK</text>
+<path d="M288 221 H369" stroke="#2d9fe7" stroke-width="2.5"/><path d="M357 213 L369 221 L357 229" fill="none" stroke="#2d9fe7" stroke-width="2.5"/><text x="296" y="205" font-size="15" font-weight="700">1</text><text x="334" y="205" font-size="15" font-weight="700">0..*</text>
+<path d="M631 221 H712" stroke="#2d9fe7" stroke-width="2.5"/><path d="M700 213 L712 221 L700 229" fill="none" stroke="#2d9fe7" stroke-width="2.5"/><text x="639" y="205" font-size="15" font-weight="700">1</text><text x="677" y="205" font-size="15" font-weight="700">0..*</text>
+<text x="26" y="390" font-size="17" font-weight="600" fill="#0b356b">Create in order: customer → policy → claim</text>
+<text x="26" y="418" font-size="15">PK = primary key   ·   FK = foreign key   ·   Foreign keys keep each child linked to an existing parent</text>
+</g></svg>

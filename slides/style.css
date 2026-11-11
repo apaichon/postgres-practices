@@ -1,0 +1,81 @@
+/* ClaimSure continuous case — matches the course enterprise blue theme. */
+.slidev-layout.continuous-deck {
+  background: #fbfdff; color: #18395f; border-top: 6px solid #43b7ef;
+  padding: 3.25rem 3.1rem 2.5rem; font-size: 1.1rem; line-height: 1.5;
+  overflow-y: auto; overflow-x: hidden; box-sizing: border-box;
+  font-family: 'Noto Sans Thai', Inter, sans-serif;
+}
+.continuous-deck h1 { font-size: 2rem; line-height: 1.25; font-weight: 720; color: #0b356b; margin: 0 0 1rem; letter-spacing: 0; }
+.continuous-deck h2 { font-size: 1.3rem; line-height: 1.4; color: #15599a; margin: .5rem 0; }
+.continuous-deck h3 { color: #15599a; font-size: 1.05rem; }
+.slidev-layout.continuous-deck h1 + p { opacity: 1; }
+.continuous-deck p { margin: .6rem 0; color: #18395f; opacity: 1; }
+.continuous-deck strong { color: #0b356b; }
+.continuous-deck a { color: #147dc1; }
+.continuous-deck ul, .continuous-deck ol { margin: .65rem 0; }
+.continuous-deck li { margin: .4rem 0; }
+.continuous-deck table { width: 100%; border-collapse: collapse; font-size: 1.02rem; line-height: 1.45; margin: .9rem 0; }
+.continuous-deck th { background: #eaf7ff; color: #0b356b; font-weight: 700; }
+.continuous-deck th, .continuous-deck td { padding: .58rem .7rem; border-bottom: 1px solid #cceafb; vertical-align: top; }
+.continuous-deck pre { background: #f4faff !important; border: 1px solid #b9e0f5; border-left: 4px solid #2d9fe7; border-radius: 6px; padding: .6rem .8rem !important; margin: .7rem 0; box-shadow: none; }
+.continuous-deck pre, .continuous-deck pre code { font-size: .97rem !important; line-height: 1.45 !important; }
+.continuous-deck pre code { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.continuous-deck p code, .continuous-deck li code, .continuous-deck td code { font-size: .94em; background: #e9f4fb; color: #0b356b; padding: .06rem .2rem; border-radius: 3px; overflow-wrap: anywhere; }
+.continuous-deck .cs-flow { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin: 1.6rem 0; padding: 1rem 0; border-top: 1px solid #b9e0f5; border-bottom: 1px solid #b9e0f5; }
+.continuous-deck .cs-flow > div { flex: 1; min-width: 0; text-align: center; }
+.continuous-deck .cs-flow strong { display: block; font-size: 1.45rem; line-height: 1.3; }
+.continuous-deck .cs-flow small { display: block; font-size: 1rem; margin-top: .5rem; color: #24578c; }
+.continuous-deck .cs-flow > span { color: #269ace; font-size: 1.8rem; }
+.continuous-deck .cs-metrics { display: flex; gap: 2rem; align-items: baseline; margin: 1.5rem 0; }
+.continuous-deck .cs-metrics > div { flex: 1; border-bottom: 2px solid #78cffa; padding-bottom: .7rem; }
+.continuous-deck .cs-metrics b { display: block; font-size: 2.7rem; line-height: 1.1; color: #0b356b; }
+.continuous-deck .cs-metrics span { display: block; margin-top: .55rem; color: #24578c; }
+.continuous-deck .cs-takeaway { margin: 1rem 0 0; padding: .7rem 0 .1rem .85rem; border-left: 4px solid #43b7ef; color: #15599a; font-size: 1.1rem; font-weight: 600; }
+.continuous-deck .cs-columns { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 2rem; margin-top: .8rem; }
+.continuous-deck .cs-columns > div { min-width: 0; }
+.continuous-deck .cs-formula { font-size: 2.05rem; line-height: 1.45; color: #0b356b; margin: 1.3rem 0; font-weight: 700; }
+.continuous-deck .cs-footer { position: absolute; bottom: .7rem; left: 3.1rem; right: 3.1rem; display: flex; justify-content: space-between; color: #51718f; font-size: .72rem; line-height: 1.3; }
+.continuous-deck.cover { border-top: 0; display: flex; flex-direction: column; justify-content: center; padding: 3.2rem 3.8rem; overflow: hidden; }
+.continuous-deck.cover .cover-art { position: absolute; inset: 0; z-index: 0; }
+.continuous-deck.cover .cover-art img { width: 100%; height: 100%; object-fit: cover; }
+.continuous-deck.cover h1 { position: relative; z-index: 1; font-size: 2.65rem; line-height: 1.15; max-width: 43%; margin: 0 0 1.3rem; }
+.continuous-deck.cover h2 { position: relative; z-index: 1; font-size: 1.15rem; line-height: 1.5; max-width: 40%; margin: 0; }
+.continuous-deck.cover .cs-footer { z-index: 1; }
+@media print { .slidev-layout.continuous-deck { overflow: visible; } }
+
+/* Concept-first teaching shared by all course modules. */
+:is(.cs-module-one, .cs-module-two, .cs-module-three, .cs-module-four, .cs-module-five, .cs-concept-deck) .cs-concept-visual {
+  display: block;
+  width: 100%;
+  height: 345px;
+  object-fit: contain;
+  margin: .7rem auto;
+}
+:is(.cs-module-one, .cs-module-two, .cs-module-three, .cs-module-four, .cs-module-five, .cs-concept-deck).cs-fundamental:not(.cs-infographic) .cs-concept-visual { height: 310px; }
+:is(.cs-module-one, .cs-module-two, .cs-module-three, .cs-module-four, .cs-module-five, .cs-concept-deck) .cs-wide-infographic { object-fit: cover; }
+:is(.cs-module-one, .cs-module-two, .cs-module-three, .cs-module-four, .cs-module-five, .cs-concept-deck) .cs-concept-caption {
+  text-align: center;
+  color: #15599a;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: .65rem 0 0;
+}
+
+.cs-module-one.cs-connection-concept .concept-visual { height: 320px; }
+.cs-module-one.cs-connection-concept .concept-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .6rem;
+  color: #15599a;
+  font-size: .95rem;
+  font-weight: 600;
+  text-align: center;
+}
+.cs-module-one.cs-connection-concept .connection-example-note {
+  margin: .65rem 0 0;
+  font-size: .82rem;
+  text-align: center;
+  color: #51718f;
+}

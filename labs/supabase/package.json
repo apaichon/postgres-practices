@@ -1,0 +1,16 @@
+{
+  "name": "claimsure-supabase-tutorial",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture-tutorial.mjs",
+    "tutorial": "node render-tutorial.mjs",
+    "capture:guide": "node capture-user-guide.mjs",
+    "guide": "node render-user-guide.mjs",
+    "guide:pdf": "node render-user-guide.mjs --pdf"
+  },
+  "devDependencies": {
+    "playwright": "1.65.0",
+    "markdown-it": "14.3.2"
+  }
+}

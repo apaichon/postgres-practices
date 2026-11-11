@@ -1,0 +1,98 @@
+{
+  "base_url": "http://127.0.0.1:18000",
+  "upstream_revision": "189adda99d1b56da55fc5a6ee3f849354aaea92a",
+  "playwright_version": "1.65.0",
+  "browser_version": "150.0.7871.129",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "data": "Synthetic ClaimSure demo only",
+  "capture_method": "Playwright screenshots of the running self-hosted Studio; no mocked responses",
+  "verification": "verification.json",
+  "captures": [
+    {
+      "step": 1,
+      "title": "ClaimSure self-hosted Studio",
+      "url": "http://127.0.0.1:18000/project/default",
+      "image": "images/01-studio-overview.png",
+      "assertions": [
+        "ClaimSure Self-hosted Lab"
+      ],
+      "captured_at": "2026-11-09T02:12:32.858Z",
+      "sha256": "01d908f5c92381413d63143ab92559d028f9a8b3d77c7640f63aba55fc32eeae"
+    },
+    {
+      "step": 2,
+      "title": "SQL Editor: four synthetic claims",
+      "url": "http://127.0.0.1:18000/project/default/sql/5c65da3a-5c93-4d07-9ba6-680aca66a4d8",
+      "image": "images/02-sql-editor.png",
+      "assertions": [
+        "CLM-BKK-001",
+        "CLM-CM-002"
+      ],
+      "captured_at": "2026-11-09T02:12:35.830Z",
+      "sha256": "6d6d4a6706175bbeb9f514bca552449665f3888401548125e38789d76f0c6483"
+    },
+    {
+      "step": 3,
+      "title": "Authentication: confirmed demo users",
+      "url": "http://127.0.0.1:18000/project/default/auth/users",
+      "image": "images/03-auth-users.png",
+      "assertions": [
+        "adjuster.bkk@claimsure.example.com",
+        "adjuster.cm@claimsure.example.com"
+      ],
+      "captured_at": "2026-11-09T02:12:38.238Z",
+      "sha256": "dadf4eadd0574219eb333133a765816d5d1fd92163689c29a94b77db3b86c517"
+    },
+    {
+      "step": 4,
+      "title": "Table Editor: claimsure_claims",
+      "url": "http://127.0.0.1:18000/project/default/editor/17986?schema=public",
+      "image": "images/04-table-editor.png",
+      "assertions": [
+        "CLM-BKK-001",
+        "CLM-CM-002"
+      ],
+      "captured_at": "2026-11-09T02:12:40.351Z",
+      "sha256": "3d9b008211b1a03295e69f261af7298ea0671d79f0a051c9ef8a3ddace3eb297"
+    },
+    {
+      "step": 5,
+      "title": "RLS: SELECT, INSERT and UPDATE policies",
+      "url": "http://127.0.0.1:18000/project/default/database/policies",
+      "image": "images/05-rls-policies.png",
+      "assertions": [
+        "claims_read_own",
+        "claims_insert_own",
+        "claims_update_own"
+      ],
+      "captured_at": "2026-11-09T02:12:42.425Z",
+      "sha256": "d878ed5ee091a6f386bad3848df79a170dd72ad86dc3fada713e00dea37b3221"
+    },
+    {
+      "step": 6,
+      "title": "Storage: private claim documents",
+      "url": "http://127.0.0.1:18000/project/default/storage/files/buckets/claim-documents",
+      "image": "images/06-private-storage.png",
+      "assertions": [
+        "example-claim.txt"
+      ],
+      "captured_at": "2026-11-09T02:12:44.007Z",
+      "sha256": "bc165b513491cbbe61b9e87f2877136d9b61e2d81142a5959f67bf269abb3cae"
+    },
+    {
+      "step": 7,
+      "title": "Storage: Public bucket switched off",
+      "url": "http://127.0.0.1:18000/project/default/storage/files/buckets/claim-documents?edit=true",
+      "image": "images/07-storage-settings.png",
+      "assertions": [
+        "Public bucket"
+      ],
+      "captured_at": "2026-11-09T02:12:45.108Z",
+      "sha256": "1e0cfa408a3a4530cafc1ef8faed268fb4511f759c6814deb36688451593b467",
+      "public_bucket": false
+    }
+  ]
+}

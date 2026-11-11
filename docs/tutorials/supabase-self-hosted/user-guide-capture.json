@@ -1,0 +1,13 @@
+{
+  "captured_at": "2026-11-09T02:51:39.645Z",
+  "url": "http://127.0.0.1:18000/project/default/auth/users?new=true",
+  "image": "images/08-user-guide-create-user.png",
+  "sha256": "7d6efd27dd41bf7166ecb5715faff6328282843c7f88f64ded78ef5e374f0caf",
+  "method": "Playwright element screenshot, real Studio, blank Create new user form; no user submitted",
+  "dialog_labels": [
+    "Email address",
+    "User Password",
+    "Auto confirm user?",
+    "A confirmation email will not be sent when creating a user via this form."
+  ]
+}

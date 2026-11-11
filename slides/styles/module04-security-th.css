@@ -1,0 +1,153 @@
+/* Imported Module 4 Pure SQL styles. Selectors affect only pure-lab decks. */
+.slidev-layout.pure-lab {
+  background: #fbfdff;
+  color: #18395f;
+  padding: 3rem 3.4rem 2.5rem;
+  border-top: 6px solid #43b7ef;
+  font-size: 1.02rem;
+  line-height: 1.42;
+  overflow-y: auto;
+}
+.pure-lab h1 {
+  color: #0b356b;
+  font-size: 2.05rem;
+  font-weight: 720;
+  line-height: 1.14;
+  letter-spacing: 0;
+  margin-bottom: 1rem;
+}
+.pure-lab strong { color: #0b356b; }
+.pure-lab h2, .pure-lab h3 { color: #15599a; }
+.pure-lab a { color: #147dc1; }
+.pure-lab p { line-height: 1.45; margin: 0.75rem 0; }
+.pure-lab li { line-height: 1.55; margin-bottom: 0.4rem; }
+.pure-lab table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #78cffa;
+  border-radius: 6px;
+  font-size: 0.94rem;
+  line-height: 1.38;
+}
+.pure-lab th { background: #eaf7ff; color: #0b356b; font-weight: 700; }
+.pure-lab th, .pure-lab td { padding: 0.48rem 0.62rem; border-bottom: 1px solid #cceafb; }
+.pure-lab tr:last-child td { border-bottom: 0; }
+.pure-lab pre {
+  background: #f4faff !important;
+  border: 1px solid #b9e0f5;
+  border-left: 4px solid #2d9fe7;
+  border-radius: 6px;
+  box-shadow: none;
+  max-width: 100%;
+}
+.pure-lab pre code { font-size: 0.86rem; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pure-lab :not(pre) > code { background: #e9f4fb; color: #0b356b; padding: 0.08rem 0.25rem; border-radius: 4px; overflow-wrap: anywhere; }
+.pure-lab .run-line {
+  color: #24578c;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: -0.1rem 0 0.8rem;
+}
+.pure-lab.two-cols-header {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  grid-template-rows: auto 1fr !important;
+  column-gap: 2.5rem;
+}
+.pure-lab .col-left, .pure-lab .col-right { min-width: 0; }
+.pure-lab .col-left { padding-right: 0.2rem; }
+.pure-lab .col-right { padding-left: 0.2rem; }
+.slidev-layout.pure-lab-cover {
+  background: #fbfdff;
+  color: #18395f;
+  padding: 4.2rem 3rem;
+  border-top: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+.pure-lab-cover .cover-art { position: absolute; inset: 0; z-index: 0; }
+.pure-lab-cover .cover-art img { width: 100%; height: 100%; object-fit: cover; }
+.pure-lab-cover h1, .pure-lab-cover h2 { position: relative; z-index: 1; }
+.pure-lab-cover h1 { color: #0b356b; max-width: 35%; font-size: 2.65rem; line-height: 1.08; font-weight: 720; letter-spacing: 0; }
+.pure-lab-cover h2 { color: #24578c; max-width: 35%; font-size: 1.24rem; line-height: 1.4; margin-top: 1.4rem; }
+
+/* Module 4 concept images also fit when opened directly by slide number. */
+.slidev-layout.pure-lab.infographic-slide {
+  background: #fbfdff;
+  color: #18395f;
+  padding: 3.4rem 3.4rem 2.1rem;
+  border-top: 6px solid #43b7ef;
+  font-size: 1.02rem;
+  line-height: 1.42;
+  overflow: hidden;
+}
+
+.slidev-layout.pure-lab.infographic-slide h1 {
+  color: #0b356b;
+  font-size: 1.8rem;
+  font-weight: 720;
+  line-height: 1.14;
+  margin-bottom: 0.7rem;
+}
+
+.slidev-layout.pure-lab.infographic-slide .run-line {
+  color: #24578c;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: -0.1rem 0 0.8rem;
+}
+
+.slidev-layout.pure-lab.infographic-slide .lab-concept-image {
+  display: block;
+  width: 100%;
+  height: 18.5rem;
+  object-fit: contain;
+  margin: 0.5rem auto;
+}
+
+.slidev-layout.pure-lab.infographic-slide .lab-concept-image.permission-map {
+  height: 17rem;
+  object-fit: cover;
+  object-position: center;
+}
+
+.slidev-layout.pure-lab.infographic-slide .concept-caption {
+  color: #24578c;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin: 0.65rem 0 0;
+}
+/* Thai copies keep the source theme while allowing Thai text to wrap. */
+.slidev-layout:is(.pure-lab, .pure-lab-cover).thai-deck {
+  font-family: 'Noto Sans Thai', Inter, sans-serif !important;
+  line-height: 1.5;
+  overflow-y: auto !important;
+}
+.slidev-layout:is(.pure-lab, .pure-lab-cover).thai-deck h1,
+.slidev-layout:is(.pure-lab, .pure-lab-cover).thai-deck h2,
+.slidev-layout:is(.pure-lab, .pure-lab-cover).thai-deck h3 {
+  line-height: 1.3;
+}
+.slidev-layout:is(.pure-lab, .pure-lab-cover).thai-deck.module-cover h1 {
+  font-size: 2.4rem !important;
+  line-height: 1.18 !important;
+}
+.slidev-layout:is(.pure-lab, .pure-lab-cover).thai-deck.module-cover h2 {
+  font-size: 1.1rem !important;
+  line-height: 1.5 !important;
+}
+.slidev-layout:is(.pure-lab, .pure-lab-cover).thai-deck pre code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.slidev-layout:is(.pure-lab, .pure-lab-cover).thai-deck .concept-caption {
+  flex-wrap: wrap;
+  row-gap: 0.3rem;
+}

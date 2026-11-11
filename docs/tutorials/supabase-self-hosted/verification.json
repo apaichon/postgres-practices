@@ -1,0 +1,183 @@
+{
+  "captured_at": "2026-11-10T09:30:53Z",
+  "base_url": "http://127.0.0.1:28010",
+  "checks": [
+    {
+      "check": "BKK sign-in: Auth issues a user JWT",
+      "method": "POST",
+      "path": "/auth/v1/token?grant_type=password",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "check": "CM sign-in: Auth issues a user JWT",
+      "method": "POST",
+      "path": "/auth/v1/token?grant_type=password",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "check": "Wrong password rejected",
+      "method": "POST",
+      "path": "/auth/v1/token?grant_type=password",
+      "status": 400,
+      "pass": true
+    },
+    {
+      "check": "Invalid bearer token rejected",
+      "method": "GET",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no",
+      "status": 401,
+      "pass": true
+    },
+    {
+      "check": "anon SELECT: no user signed in",
+      "method": "GET",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no",
+      "status": 200,
+      "pass": true,
+      "rows": []
+    },
+    {
+      "check": "authenticated / BKK SELECT own claims",
+      "method": "GET",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no",
+      "status": 200,
+      "pass": true,
+      "rows": [
+        {
+          "claim_no": "CLM-BKK-001",
+          "branch": "BKK",
+          "amount": 12500.0,
+          "status": "NEW"
+        },
+        {
+          "claim_no": "CLM-BKK-002",
+          "branch": "BKK",
+          "amount": 28000.0,
+          "status": "REVIEW"
+        }
+      ]
+    },
+    {
+      "check": "authenticated / CM SELECT own claims",
+      "method": "GET",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no",
+      "status": 200,
+      "pass": true,
+      "rows": [
+        {
+          "claim_no": "CLM-CM-001",
+          "branch": "CM",
+          "amount": 8900.0,
+          "status": "NEW"
+        },
+        {
+          "claim_no": "CLM-CM-002",
+          "branch": "CM",
+          "amount": 16500.0,
+          "status": "APPROVED"
+        }
+      ]
+    },
+    {
+      "check": "service_role SELECT: instructor/backend only; bypasses RLS",
+      "method": "GET",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no",
+      "status": 200,
+      "pass": true,
+      "rows": [
+        {
+          "claim_no": "CLM-BKK-001",
+          "branch": "BKK",
+          "amount": 12500.0,
+          "status": "NEW"
+        },
+        {
+          "claim_no": "CLM-BKK-002",
+          "branch": "BKK",
+          "amount": 28000.0,
+          "status": "REVIEW"
+        },
+        {
+          "claim_no": "CLM-CM-001",
+          "branch": "CM",
+          "amount": 8900.0,
+          "status": "NEW"
+        },
+        {
+          "claim_no": "CLM-CM-002",
+          "branch": "CM",
+          "amount": 16500.0,
+          "status": "APPROVED"
+        }
+      ]
+    },
+    {
+      "check": "BKK filters for CM: RLS still hides other owners",
+      "method": "GET",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no&branch=eq.CM",
+      "status": 200,
+      "pass": true,
+      "rows": []
+    },
+    {
+      "check": "BKK INSERT for CM rejected",
+      "method": "POST",
+      "path": "/rest/v1/claimsure_claims",
+      "status": 403,
+      "pass": true
+    },
+    {
+      "check": "BKK INSERT own claim",
+      "method": "POST",
+      "path": "/rest/v1/claimsure_claims",
+      "status": 201,
+      "pass": true
+    },
+    {
+      "check": "BKK reads the newly inserted claim",
+      "method": "GET",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no&id=eq.ea49ebca-5f45-4d08-86a3-cafc4e8a87e6",
+      "status": 200,
+      "pass": true,
+      "rows": [
+        {
+          "claim_no": "CLM-API-7ce844e87afc41049f3adfdb02e8aabd",
+          "branch": "BKK",
+          "amount": 10.0,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "check": "CM cannot see the BKK inserted claim",
+      "method": "GET",
+      "path": "/rest/v1/claimsure_claims?select=claim_no,branch,amount,status&order=claim_no&id=eq.ea49ebca-5f45-4d08-86a3-cafc4e8a87e6",
+      "status": 200,
+      "pass": true,
+      "rows": []
+    },
+    {
+      "check": "BKK UPDATE own claim status",
+      "method": "PATCH",
+      "path": "/rest/v1/claimsure_claims?id=eq.ea49ebca-5f45-4d08-86a3-cafc4e8a87e6",
+      "status": 200,
+      "pass": true,
+      "rows": [
+        {
+          "claim_no": "CLM-API-7ce844e87afc41049f3adfdb02e8aabd",
+          "status": "REVIEW"
+        }
+      ]
+    },
+    {
+      "check": "BKK UPDATE owner to CM rejected",
+      "method": "PATCH",
+      "path": "/rest/v1/claimsure_claims?id=eq.ea49ebca-5f45-4d08-86a3-cafc4e8a87e6",
+      "status": 403,
+      "pass": true
+    }
+  ],
+  "execution_environment": "Isolated temporary Compose project; test stack removed after verification."
+}

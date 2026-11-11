@@ -1,0 +1,475 @@
+Module 7 Backup and Recovery Student Lab
+
+Copyable shared-server command tutorial
+
+  Read the Markdown tutorial with commands and expected results:
+      cat "$HOME/scripts/module07-command-tutorial.md"
+
+  Original PostgreSQL commands, without invoking run-lab07.sh, for Labs C/D:
+      cat "$HOME/scripts/module07-manual-labs-c-d.md"
+  Follow M1-M5 -> C1-C5 -> D1-D7 -> Z1 in one student Bash terminal.
+  The manual guide identifies source/recovery config files and reload/restart
+  rules, uses a fresh m7-manual.* workspace and includes all shared/staged
+  row checks. Its native pg_ctl shutdown is separate from wrapper cleanup.
+
+  Run the full shared-server tutorial with one command:
+      bash "$HOME/scripts/module07-shared-tutorial.sh"
+
+  Preview it without creating files or changing data:
+      bash "$HOME/scripts/module07-shared-tutorial.sh" --dry-run
+
+  This resets only lab_m7_practice.claim_event in your main database, saves a
+  new logical archive, commits the practice mistake, and restores only the
+  practice schema into your backup database. Both connections use port 5432.
+  The runnable copy chooses a fresh archive filename and stops on errors.
+
+  Or copy this complete block into your student SSH terminal:
+
+bash <<'LAB7'
+set -euo pipefail
+cd "$HOME/scripts"
+LAB7_DUMP="$HOME/backups/module07/shared-$(date -u +%Y%m%dT%H%M%SZ)-$$.dump"
+
+./run-lab07.sh seed main --reset-practice
+./run-lab07.sh practice-backup "$LAB7_DUMP"
+./run-lab07.sh damage
+./run-lab07.sh inspect main
+./run-lab07.sh practice-restore "$LAB7_DUMP" --database backup
+./run-lab07.sh inspect-recovery
+
+printf '\nSaved backup: %s\n' "$LAB7_DUMP"
+LAB7
+
+Practise logical backup, a physical base backup, a filesystem snapshot recovery
+workflow, and point-in-time recovery (PITR) using PostgreSQL 18. Allow 90–120
+minutes. Record commands, backup locations, validation results, and elapsed times.
+Each student works with their own database and their own private server process.
+
+Files
+  run-lab07.sh                  guided menu and parameter-based commands
+  module07-practice.sql         two independent practice rows (no insurance dependencies)
+  module07-backup-recovery.txt  this lab
+
+Before starting
+  Log in to your student SSH account and go to ~/scripts. Your installed .env
+  identifies student xx. The script loads it and uses your existing .pgpass or
+  DB_PASSWORD. No sudo or Docker access is needed by students.
+
+  This classroom's shared PostgreSQL server runs in Docker. Logical backups
+  connect to that server. Physical/snapshot/PITR exercises use separate native
+  PostgreSQL processes in each student's private ~/m7 directory. Students do
+  not need Docker access and do not operate on the shared container's files.
+
+  The instructor sets up the shared lab runtime ONCE on the host:
+      cd /opt/setup-postgres-labs
+      sudo ./scripts/setup-module07-runtime.sh
+      sudo ./scripts/install-module07.py
+  This extracts Ubuntu PostgreSQL 18 server/client binaries and liburing2 into
+  /usr/local/lib/claimsure-postgres18 without installing a host system service
+  or starting a default database. The script detects this runtime automatically.
+  A normal PostgreSQL 18 server package installation also works. PG_BIN can
+  override the tool directory when another installation is used.
+  GNU coreutils, find, xargs, Bash 4+, and flock are also required (Ubuntu defaults).
+
+  Physical files require the same PostgreSQL major version and compatible server
+  binaries/extensions. The private cluster uses only built-in features. Allow at
+  least 1 GB of free disk per student for these small exercises and retain only
+  the attempts needed. Private servers listen only on a Unix socket below ~/m7,
+  with private directory/socket permissions; no TCP port is opened. Multiple
+  students can use the same host without Docker or shared-cluster privileges.
+
+  Choose your number, for example studentxx:
+      export STUDENT_NO=xx
+      export M7_BACKUP_DIR="$HOME/backups/module07"
+      mkdir -p "$M7_BACKUP_DIR"
+      ./run-lab07.sh doctor       # all tools should report PostgreSQL 18
+      ./run-lab07.sh --help
+      ./run-lab07.sh
+
+  Database shortcuts main, backup, sandbox and restore use your assigned
+  number automatically. Script defaults are internal: they do not set variables
+  in your calling shell. The commands below use these shortcuts and $HOME paths,
+  so they work even if STUDENT_NO or M7_BACKUP_DIR is unset in your terminal.
+
+  Shared-server defaults (port 5432): damage changes claimsure_xx; inspect main
+  reads claimsure_xx; inspect-recovery reads claimsure_backup_xx. Only the
+  lab_m7_practice schema is used for the data-loss drill.
+  For advanced private-cluster labs use damage sandbox and
+  inspect-sandbox-recovery explicitly. Physical/snapshot/PITR operations still
+  restore a whole private cluster. Staged Labs C/D then logically import only
+  recovered practice data into your selected own shared database on port 5432.
+
+  The menu executes one selected action, then exits. Run it again for the next
+  action. Empty input accepts the displayed default. All commands below have
+  menu equivalents. Missing positional parameters are prompted. A literal - is
+  a placeholder for an unused object argument. Command-line paths containing
+  spaces must be quoted; paths typed at a prompt need no surrounding quotes.
+
+  Preview commands without connecting or creating files:
+      ./run-lab07.sh --dry-run logical-backup
+      ./run-lab07.sh --dry-run physical-backup
+      ./run-lab07.sh --dry-run pitr-restore
+  In a dry run, omitted parameters use the defaults without prompting.
+  Dry run shows command syntax; actual execution checks artifacts and readiness.
+
+Recovery scope
+  Logical: database/schema/table or definitions/data, restored with pg_restore.
+  Physical: entire cluster, including every database and cluster role.
+  Snapshot: complete cluster storage at one consistent instant.
+  PITR: base backup plus continuous archived WAL through a selected time/name.
+
+  Physical backup, snapshot and PITR cannot select one table or database. To
+  recover just a table with PITR, recover an isolated cluster first, then dump
+  that table logically. pg_dump does not include cluster roles or tablespaces;
+  an administrator backs those up separately with pg_dumpall --globals-only.
+  This student script uses --no-owner --no-acl so roles are not required to
+  restore its logical practice data.
+
+Lab A Logical schema backup and restore
+
+  1. Prepare a small independent schema in your main database:
+      ./run-lab07.sh seed main
+     Expected: rows 1 and 2, count 2, amount total 350.00.
+     Preparation adds missing baseline rows; it does not clear existing changes.
+
+  2. Back up only this schema and inspect the archive inventory printed by the
+     script. The source database remains online:
+      ./run-lab07.sh logical-backup main schema lab_m7_practice "$HOME/backups/module07/practice.dump"
+     Format shown before execution:
+      pg_dump -h HOST -p PORT -U USER -d DATABASE -Fc --schema=SCHEMA -f FILE
+     Confirm practice.dump and practice.dump.sha256 exist. The script writes
+     a temporary archive, validates its inventory, then publishes the final file.
+
+  3. Restore into your separate existing backup database:
+      ./run-lab07.sh logical-restore "$HOME/backups/module07/practice.dump" backup all -
+      ./run-lab07.sh inspect backup
+     Expected: the two original rows and total 350.00. Compare source and target.
+     Restore checks the SHA-256 checksum and uses one transaction. A conflicting
+     existing object causes a rollback. No DROP, --clean or database reset occurs.
+
+  4. Explore the prompts for other backup selections. Use NEW output names:
+      ./run-lab07.sh logical-backup main table lab_m7_practice.claim_event "$HOME/backups/module07/table.dump"
+      ./run-lab07.sh logical-backup main definitions - "$HOME/backups/module07/definitions.dump"
+      ./run-lab07.sh logical-backup main data - "$HOME/backups/module07/data.dump"
+      ./run-lab07.sh logical-backup main database - "$HOME/backups/module07/database.dump"
+     Large course databases will take longer to dump. A database dump includes
+     user objects in all accessible schemas. The definitions/data choices cover
+     that database rather than a selected schema.
+
+  5. Optional selected-table restore: use an empty target table location. The
+     schema must already exist; a table-only dump does not include CREATE SCHEMA.
+     This example uses your PRIVATE restore database after Lab B initializes it:
+      psql -X -h "$HOME/m7/sock" -p "$((5700 + 10#$STUDENT_NO))" -U labadmin -d "m7_restore_$STUDENT_NO" -c 'CREATE SCHEMA lab_m7_practice;'
+      ./run-lab07.sh logical-restore "$HOME/backups/module07/table.dump" restore table lab_m7_practice.claim_event
+     Table selection restores the matching table and data; pg_restore filters
+     may omit subsidiary indexes/constraints and never resolve dependencies.
+     Use the complete schema or database archive for full-fidelity recovery.
+     Data-only restore requires compatible empty tables. Restore definitions
+     first when learning the separate definitions/data flow in a fresh target.
+
+  Reruns: use a new dump filename. To replace the dedicated practice schema
+  in your own backup database, use:
+      ./run-lab07.sh practice-restore "$HOME/backups/module07/practice.dump"
+  This replacement is limited to lab_m7_practice and runs in one transaction.
+  Generic logical-restore requires a target without conflicting objects.
+
+Choose the practice restore database
+
+  Restore back into your original main database:
+      ./run-lab07.sh practice-restore "$HOME/backups/module07/practice.dump" --database main
+      ./run-lab07.sh inspect main
+
+  Or choose the separate backup database:
+      ./run-lab07.sh practice-restore "$HOME/backups/module07/practice.dump" --database backup
+      ./run-lab07.sh inspect-recovery
+
+  Replace the example archive path with your saved .dump file. Full database
+  names work too: studentxx can use --database claimsure_xx or
+  --database claimsure_backup_xx. Other students use their own number.
+  The same target can be supplied positionally after the archive filename.
+  With no target argument, backup remains the default; the menu prompts.
+
+  To run a fresh complete tutorial with recovery into the original main DB:
+      bash "$HOME/scripts/module07-shared-tutorial.sh" --database main
+  This generates its own new archive filename and restores main to IDs 1 and 2.
+  inspect-recovery still reads the backup DB; inspect main reads the main DB.
+
+Shared source damage and recovery on port 5432
+
+  This is the main workflow for changes visible in pgAdmin's claimsure_xx and
+  claimsure_backup_xx databases. No sandbox-init, private server or sudo is needed.
+
+  1. Reset ONLY the disposable practice table to IDs 1 and 2:
+      ./run-lab07.sh seed main --reset-practice
+     The reset truncates lab_m7_practice.claim_event in your own main database.
+     Insurance tables and other schemas are not changed.
+
+  2. Save a logical schema backup BEFORE damage. Choose a new filename on repeats:
+      ./run-lab07.sh practice-backup "$HOME/backups/module07/shared-before-damage.dump"
+
+  3. Commit a mistake on the shared server:
+      ./run-lab07.sh damage
+      ./run-lab07.sh inspect main
+     Expected: claimsure_xx, student_xx, port 5432; IDs 1 and 3.
+
+  4. Restore the pre-damage archive into your existing backup database:
+      ./run-lab07.sh practice-restore "$HOME/backups/module07/shared-before-damage.dump"
+      ./run-lab07.sh inspect-recovery
+     Expected: claimsure_backup_xx, student_xx, port 5432; IDs 1 and 2.
+     practice-restore transactionally replaces ONLY the archived lab_m7_practice
+     schema in the selected own database. Add --database main to recover the
+     original main database instead of using the default backup target. Other schemas are not selected and no
+     CASCADE is used. The generic logical-restore keeps its no-clean behavior.
+
+  5. Compare both connections in pgAdmin, or use:
+      ./run-lab07.sh inspect main
+      ./run-lab07.sh inspect-recovery
+     The main database keeps IDs 1 and 3; the backup database has IDs 1 and 2.
+     No stop command is needed: the shared Docker server continues running.
+
+Lab B Advanced private-cluster physical backup and recovery
+
+  1. Create a small private PostgreSQL cluster and prepare the practice rows:
+      ./run-lab07.sh sandbox-init
+      ./run-lab07.sh inspect sandbox
+     Files: ~/m7/primary. Archived WAL: ~/m7/wal. Socket: ~/m7/sock.
+     The private labadmin role is a superuser only in THIS private cluster.
+     The existing shared student databases are separate and unchanged.
+     If the sandbox already exists and is stopped, use sandbox-start instead.
+     A partial sandbox-init failure leaves its files for diagnosis; inspect
+     ~/m7/primary.log before choosing a fresh M7_WORKDIR and retrying.
+
+  2. Back up the whole private cluster while it is running:
+      ./run-lab07.sh physical-backup "$HOME/backups/module07/base"
+     Format:
+      pg_basebackup -h SOCKET -p PORT -U USER -D DEST/data -Fp -Xs -c fast -P
+      pg_verifybackup DEST/data
+     Inspect data/backup_manifest, data/PG_VERSION and SHA256SUMS in the backup.
+     -Xs streams the WAL needed to make the base backup consistent. It does not
+     replace continuous WAL archiving for changes AFTER that backup.
+
+  3. Simulate a committed mistake in the PRIVATE cluster:
+      ./run-lab07.sh damage sandbox
+      ./run-lab07.sh inspect sandbox
+     The script prints COMMIT and reads the LIVE SOURCE again using a new
+     connection. Expected source: IDs 1 and 3; row 2 is missing. No insurance
+     data is changed.
+
+  4. Recover the base into a new directory:
+      ./run-lab07.sh physical-restore "$HOME/backups/module07/base" auto
+      ./run-lab07.sh inspect-sandbox-recovery
+      ./run-lab07.sh inspect sandbox
+     RECOVERED COPY: IDs 1 and 2. LIVE SOURCE: IDs 1 and 3. These are separate
+     clusters, even though their database names are both m7_xx. Seeing 1 and 2
+     in inspect-sandbox-recovery proves that the older backup was restored; it does not
+     mean the source transaction failed to commit.
+     Both databases in the private cluster were copied, not only m7_xx.
+     Read the displayed socket and port if connecting manually.
+
+  5. Stop both private servers:
+      ./run-lab07.sh stop
+     Files are retained. Use auto for a new recovery destination on the next attempt.
+     To repeat slide 16, stop the previous private servers, run sandbox-start,
+     then run damage sandbox and restore the original base into a new directory. The
+     auto target above avoids replacing an earlier recovery.
+
+Lab C Observe snapshot recovery in claimsure_xx on port 5432
+
+  The source and final restored practice rows are in your actual shared database,
+  visible through your normal student_xx login in DBeaver or pgAdmin.
+
+  Workflow:
+    claimsure_xx:5432 -> logical practice export -> private m7_stage_xx
+      -> stopped-cluster snapshot -> recovered m7_stage_xx
+      -> logical practice import -> claimsure_xx:5432
+
+  This snapshots a private staging copy of the practice data. The final shared
+  database restore is a logical import of the recovered schema. The live Docker
+  cluster is not snapshotted or replaced, and other student databases are untouched.
+
+  Copy these commands into your student SSH session:
+      cd "$HOME/scripts"
+      ./run-lab07.sh seed main --reset-practice
+      ./run-lab07.sh claimsure-snapshot-backup
+      ./run-lab07.sh damage
+      ./run-lab07.sh inspect main
+      ./run-lab07.sh claimsure-snapshot-restore --database main
+      ./run-lab07.sh inspect main
+
+  Or run the full exercise with one command:
+      bash "$HOME/scripts/module07-claimsure-snapshot-tutorial.sh"
+  Preview with --dry-run. Select a different own destination with --database backup
+  or a full own database name, for example --database claimsure_xx for studentxx.
+
+  1. seed main --reset-practice resets only lab_m7_practice.claim_event to IDs 1,2.
+  2. claimsure-snapshot-backup captures the shared practice schema, prepares or
+     starts the private staging cluster, loads m7_stage_xx, stops/copies/restarts
+     it, and saves checksums and a source/student marker. A fresh backup directory
+     is generated under ~/backups/module07. You can pass a new directory explicitly.
+  3. damage commits the mistake in claimsure_xx on port 5432. Observe IDs 1,3.
+  4. claimsure-snapshot-restore recovers the recorded staging snapshot into a NEW
+     private directory and exports the recovered staging schema. It imports only
+     lab_m7_practice into the selected own main/backup database, defaulting to main.
+  5. inspect main shows IDs 1,2 again in the actual shared database on port 5432.
+     The restore prints the target database, role and server port as evidence.
+
+  To choose an older staged snapshot instead of the latest completed capture:
+      ./run-lab07.sh claimsure-snapshot-restore /PATH/TO/STAGED-SNAPSHOT --database main
+  The helper checks that it was staged from your own claimsure_xx database. Raw
+  private backups from snapshot-backup are not accepted as staged shared captures.
+
+  GUI verification: connect to the shared server on port 5432, database
+  claimsure_xx, user student_xx, with your assigned PostgreSQL password. Run:
+      SELECT current_database(), current_user, current_setting('port');
+      SELECT * FROM lab_m7_practice.claim_event ORDER BY event_id;
+  Before restore, expect 1,3; after restore, expect 1,2. Refresh the query results.
+
+  The private helper processes can be stopped after observing the shared result:
+      ./run-lab07.sh stop
+  This stops only private clusters. The restored shared database remains available.
+
+Lab D Point-in-time recovery with results on shared port 5432
+
+  Run the complete lesson (resets only the main practice table):
+      bash "$HOME/scripts/module07-claimsure-pitr-tutorial.sh"
+  Or copy these commands in order:
+      cd "$HOME/scripts"
+      ./run-lab07.sh seed main --reset-practice
+      ./run-lab07.sh claimsure-pitr-backup
+      ./run-lab07.sh claimsure-pitr-event
+      ./run-lab07.sh claimsure-pitr-mark
+      ./run-lab07.sh damage
+      ./run-lab07.sh inspect main
+      ./run-lab07.sh claimsure-pitr-restore --database main
+      ./run-lab07.sh inspect main
+
+  Expected committed rows in claimsure_xx on port 5432:
+    After reset/base:           1,2
+    After pitr-event and mark:  1,2,4 (row 4 = AFTER_BASE_BEFORE_POINT, 400.00)
+    After damage:              1,3,4 (row 3 = AFTER_LOSS; row 2 deleted)
+    After PITR/import:         1,2,4 (row 2 recovered, row 4 kept, row 3 absent)
+
+  Connect DBeaver/pgAdmin to your normal host, port 5432, database claimsure_xx,
+  login student_xx and your existing student password. Refresh/re-run:
+      SELECT event_id, description, amount
+      FROM lab_m7_practice.claim_event ORDER BY event_id;
+  End any old transaction first so its snapshot does not hide committed changes.
+
+  How this lesson works:
+    claimsure-pitr-backup exports the shared practice schema to private
+    m7_stage_xx, then completes a real pg_basebackup of that staging cluster.
+    claimsure-pitr-event commits row 4 on the actual shared main database.
+    claimsure-pitr-mark synchronizes that state into staging AFTER the base,
+    creates a unique named restore point, switches WAL and waits for archiving.
+    damage commits deletion/insertion on the shared main database.
+    claimsure-pitr-restore copies this later damaged state into staging too and
+    archives WAL beyond the target. It restores the physical base into a NEW
+    private directory and replays archived staging WAL until the saved point.
+    Only after replay is PAUSED does it export recovered lab_m7_practice and
+    logically import it into the selected own shared database on port 5432.
+
+  Staging is synchronized at these explicit commands. This does not archive
+  WAL continuously from the live Docker server or roll back its whole cluster.
+  Retaining row 4 proves that recovery replayed WAL after the physical base;
+  excluding row 3 proves that later transactions were not replayed.
+  Only lab_m7_practice is replaced in the chosen shared database.
+
+  Alternative restore destination:
+      ./run-lab07.sh claimsure-pitr-restore --database backup
+      ./run-lab07.sh inspect-recovery
+  Full own names, e.g. --database claimsure_xx, are also supported.
+  The runner accepts --database backup and --dry-run.
+
+  Optional timestamp recovery of the same lesson:
+      ./run-lab07.sh claimsure-pitr-restore --at-time saved --database main
+  Uses the staging timestamp saved immediately after the named point. An exact
+  timestamp with timezone can also be supplied via --at-time 'YYYY-MM-DD HH:MM:SS+00'.
+  It must follow the completed base and precede the unwanted staging commit.
+
+  Evidence and cleanup:
+      ./run-lab07.sh inspect-sandbox-recovery
+      ./run-lab07.sh inspect main
+      ./run-lab07.sh stop
+  The private recovered staging DB remains read-only and paused. stop stops
+  private instances; the shared result on port 5432 remains available in the GUI.
+  Paths and point names are automatic. Start from reset/base for a fresh lesson;
+  a second mark on the same base is rejected to preserve its recorded target.
+
+Cleanup after Module 7
+
+  Preview without changes:
+      cd "$HOME/scripts"
+      ./module07-cleanup.sh
+
+  Clear your Module 7 practice data AND backup/recovery files:
+      ./module07-cleanup.sh --yes
+
+  Optional separate scopes:
+      ./module07-cleanup.sh --yes --data-only
+      ./module07-cleanup.sh --yes --files-only
+
+  Data cleanup removes only lab_m7_practice.claim_event and its otherwise empty
+  schema from your own claimsure_xx and claimsure_backup_xx on port 5432.
+  Each database uses a transaction. Dependencies or additional objects prevent
+  cleanup in that database; no CASCADE into other schemas is used. An error stops
+  subsequent steps. Re-run after resolving it; absent objects are accepted.
+
+  File cleanup stops your Module 7 private instances, validates the student
+  sandbox marker, then removes ~/m7 and ~/backups/module07, including WAL,
+  physical bases, snapshots and recovered directories. It refuses symlink roots,
+  unsafe/foreign paths and custom M7_BACKUP_DIR locations. Custom backup paths
+  outside ~/backups/module07 are left for separate cleanup.
+
+  Your insurance schemas, shared databases, credentials, installed scripts and
+  other lab directories remain. --data-only leaves all private instances/files;
+  --files-only leaves shared practice data. --dry-run always makes no changes.
+  To start again: ./run-lab07.sh seed main --reset-practice
+  Labs C/D recreate private staging; raw private labs need sandbox-init again.
+
+Troubleshooting and retention
+  Missing initdb/pg_ctl: the host has only client packages. The instructor runs
+  setup-module07-runtime.sh and re-runs install-module07.py. Run doctor afterward.
+  A failed sandbox-init must succeed before inspect or physical-backup can run.
+  Permission denied on the shared DB: use your own xx and existing credentials.
+  Connection refused: start your sandbox; check ~/m7/primary.log. For shared
+  logical operations use direct port 5432 (M7_DB_PORT), not PgBouncer port 6432.
+  Object exists on generic logical restore: the target has a conflicting object;
+  the restore transaction rolls back. For this dedicated practice schema use
+  practice-restore, which replaces only lab_m7_practice in claimsure_backup_xx. Use a fresh target location as described in A.
+  Recovery already running: stop, then sandbox-start if needed, then restore
+  with auto to create a new directory. An explicit existing target is rejected
+  to preserve its files; a stopped recovery still leaves its data directory. Only one recovery instance per sandbox runs at a time.
+  Target not reached: inspect NEW_TARGET.log; verify base-before-target ordering,
+  correct named point, and every required archived WAL segment. Do not delete
+  WAL while any retained base backup still depends on it. A missing .history
+  file probe in recovery logs can be normal; missing required WAL is not.
+  SHA-256 mismatch: stop and investigate; do not bypass integrity verification.
+  Full disk: stop private clusters and agree retention with the instructor.
+  Lab backups on the same host teach recovery; copy backups AND required WAL
+  off-host to protect against host/disk loss. Keep credentials and backups private.
+
+Student evidence to submit
+  Student number and source/target names or paths.
+  Logical archive inventory, checksum result, selected scope and row comparison.
+  Physical pg_verifybackup result and whole-cluster restore comparison.
+  Snapshot baseline, downtime measurement and recovered comparison.
+  PITR base location, target name/time, WAL segment and paused replay evidence.
+  For each method: start/end times, recovery duration (RTO), most recent recovered
+  business event and missing changes (observed RPO). Choose a target RPO/RTO and
+  explain whether your measured outcome meets it. Row counts alone are not enough;
+  compare event IDs, descriptions and amounts as well.
+
+Review questions
+  Which method can restore one table? Which methods recover the whole cluster?
+  Why are archived WAL segments needed after pg_basebackup -Xs completes?
+  Why must the PITR base finish before the selected recovery point?
+  How would a live storage snapshot differ from this stopped-copy exercise?
+  How would you extract one table from a recovered physical/PITR cluster?
+  What extra protection is needed if the backup disk or the whole host fails?
+
+PostgreSQL 18 references
+  Logical dump: https://www.postgresql.org/docs/18/app-pgdump.html
+  Restore filtering: https://www.postgresql.org/docs/18/app-pgrestore.html
+  Physical backup: https://www.postgresql.org/docs/18/app-pgbasebackup.html
+  Filesystem snapshots: https://www.postgresql.org/docs/18/backup-file.html
+  WAL and PITR: https://www.postgresql.org/docs/18/continuous-archiving.html

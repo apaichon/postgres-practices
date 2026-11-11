@@ -1,0 +1,32 @@
+{
+  "name": "postgres-admin-labs-slides",
+  "version": "0.3.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "@slidev/cli": "53.0.0",
+    "@slidev/theme-default": "0.25.0"
+  },
+  "scripts": {
+    "dev": "slidev module-01-basic-sql.md",
+    "build": "slidev build module-01-basic-sql.md",
+    "slides:0": "slidev module-00-overview.md",
+    "slides:1": "slidev module-01-basic-sql.md",
+    "slides:2": "slidev module-02-advanced-sql.md",
+    "slides:3": "slidev module-03-performance-tuning.md",
+    "slides:4": "slidev module-04-security-user-management.md",
+    "slides:4:clone": "slidev module-04-security-clone.md",
+    "build:4:clone": "slidev build module-04-security-clone.md --out dist/module04-clone",
+    "slides:4:th": "slidev module-04-security-user-management-th.md",
+    "build:4:th": "slidev build module-04-security-user-management-th.md --out dist/module04-th",
+    "slides:5": "slidev module-05-architecture.md",
+    "slides:6": "slidev module-06-configuration-simple.md",
+    "slides:7": "slidev module-07-backup-recovery.md",
+    "slides:9": "slidev module-09-monitoring.md",
+    "slides:10": "slidev module-10-modern-features-supabase.md",
+    "slides:8": "slidev module-08-replication-th.md",
+    "slides:8:en": "slidev module-08-replication.md"
+  }
+}

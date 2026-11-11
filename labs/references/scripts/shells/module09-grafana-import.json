@@ -1,0 +1,1192 @@
+{
+  "id": null,
+  "uid": null,
+  "title": "Module 9 - Student PostgreSQL Monitoring",
+  "tags": [
+    "claimsure",
+    "module09",
+    "student-lab"
+  ],
+  "schemaVersion": 40,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "description": "Student-filtered monitoring lab. Prometheus job postgres, 30s scrapes. No standby/host exporter or business p99 is deployed. Use SQL evidence and the runbook.",
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "1. Exporter HTTP scrape UP",
+      "type": "stat",
+      "description": "HTTP scrape only. An exporter can be reachable while PostgreSQL is down; check panel 2 too.",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "up{job=\"postgres\",instance=\"postgres:5432/$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "2. PostgreSQL connection healthy",
+      "type": "stat",
+      "description": "Must be 1. A missing/wrong claim_monitor role makes this 0 even if HTTP up=1.",
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "pg_up{job=\"postgres\",instance=\"postgres:5432/$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "title": "3. Exporter scrape error",
+      "type": "stat",
+      "description": "Must be 0. Inspect the collector authentication and queries if nonzero.",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "pg_exporter_last_scrape_error{job=\"postgres\",instance=\"postgres:5432/$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Tagged Module 9 sessions",
+      "type": "stat",
+      "description": "Only this student database and Module 9 application tags.",
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "claimsure_m9_activity_sessions{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Blocked Module 9 clients",
+      "type": "stat",
+      "description": "Run blocking-start for 90-120s, observe, then blocking-stop. No backend is terminated by the dashboard.",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "claimsure_m9_activity_blocked{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Oldest blocked query",
+      "type": "stat",
+      "description": "Gauge, not a rate. Expected to grow while the blocker holds its transaction.",
+      "gridPos": {
+        "x": 6,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "claimsure_m9_activity_oldest_wait_seconds{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Oldest Module 9 transaction",
+      "type": "stat",
+      "description": "",
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "claimsure_m9_activity_oldest_transaction_seconds{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Student role sessions / role limit",
+      "type": "stat",
+      "description": "Uses this role's real connection limit, not the whole cluster limit. No value if the role is unlimited.",
+      "gridPos": {
+        "x": 18,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100*claimsure_m9_capacity_own_role_sessions{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}/(claimsure_m9_capacity_own_role_limit{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}>0)",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Module 9 sessions by state",
+      "type": "timeseries",
+      "description": "",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "claimsure_m9_activity_active{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "active",
+          "instant": false,
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "claimsure_m9_activity_idle_in_transaction{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "idle in transaction",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "claimsure_m9_activity_blocked{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "blocked",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Module 9 SQL calls per second",
+      "type": "timeseries",
+      "description": "Wait for at least two 30-second scrapes. Counters are not reset by reset-all.",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(claimsure_m9_sql_calls_total{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}[$__rate_interval]))",
+          "legendFormat": "lab calls/s",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Database transactions per second",
+      "type": "timeseries",
+      "description": "Database-wide, including other exercises and monitoring queries. Zero or background activity after stop is normal.",
+      "gridPos": {
+        "x": 0,
+        "y": 15,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(pg_stat_database_xact_commit{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}[$__rate_interval])",
+          "legendFormat": "commits/s",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Database deadlocks in last 5 minutes",
+      "type": "timeseries",
+      "description": "Prometheus increase is extrapolated and may be fractional. Confirm the exact 40P01 event in worker logs/SQL counter. History remains after reset.",
+      "gridPos": {
+        "x": 12,
+        "y": 15,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "increase(pg_stat_database_deadlocks{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}[5m])",
+          "legendFormat": "estimated deadlocks/5m",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Lab estimated dead tuples",
+      "type": "timeseries",
+      "description": "Estimates from pg_stat_user_tables. Autovacuum may reduce these during/after workload.",
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "claimsure_m9_tables_dead_tuples{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "{{relname}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Database temp bytes per second",
+      "type": "timeseries",
+      "description": "Workload is bounded and may produce no temp spill. Do not induce production memory pressure merely to move this panel.",
+      "gridPos": {
+        "x": 12,
+        "y": 22,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(pg_stat_database_temp_bytes{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}[$__rate_interval])",
+          "legendFormat": "temp bytes/s",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Top lab SQL by recent execution time",
+      "type": "timeseries",
+      "description": "Execution seconds per second, not mean latency. Match the query ID with run-lab09.sh observe. No SQL text/customer identifiers in metric labels.",
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10,rate(claimsure_m9_sql_seconds_total{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}[$__rate_interval]))",
+          "legendFormat": "queryid {{queryid}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Database cache hit fraction (recent)",
+      "type": "timeseries",
+      "description": "No value if both rates are zero. This is a PostgreSQL block-cache ratio, not an OS-cache or end-to-end latency measurement.",
+      "gridPos": {
+        "x": 12,
+        "y": 29,
+        "w": 12,
+        "h": 7
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(pg_stat_database_blks_hit{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}[$__rate_interval])/(rate(pg_stat_database_blks_hit{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}[$__rate_interval])+rate(pg_stat_database_blks_read{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}[$__rate_interval]))",
+          "legendFormat": "cache hit fraction",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Database size",
+      "type": "stat",
+      "description": "",
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "pg_database_size_bytes{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 18,
+      "title": "Student database client backends",
+      "type": "stat",
+      "description": "Includes clients/collector connections; differs from tagged lab sessions and own-role sessions.",
+      "gridPos": {
+        "x": 6,
+        "y": 36,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "pg_stat_database_numbackends{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 19,
+      "title": "Cluster WAL archive failures / 5m",
+      "type": "stat",
+      "description": "Cluster-wide even when selecting a student database. Never sum this duplicate cluster counter across all 20 exporter targets.",
+      "gridPos": {
+        "x": 12,
+        "y": 36,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "increase(pg_stat_archiver_failed_count{job=\"postgres\",instance=\"postgres:5432/$database\"}[5m])",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 20,
+      "title": "Student role connection limit",
+      "type": "stat",
+      "description": "-1 means unlimited; do not raise the limit or generate a connection storm for this lab.",
+      "gridPos": {
+        "x": 18,
+        "y": 36,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "claimsure_m9_capacity_own_role_limit{job=\"postgres\",instance=\"postgres:5432/$database\",datname=\"$database\"}",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Prometheus datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
+        "refresh": 1,
+        "hide": 0
+      },
+      {
+        "name": "database",
+        "label": "Your student database",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$datasource"
+        },
+        "query": {
+          "query": "label_values(pg_up{job=\"postgres\"},instance)",
+          "refId": "database"
+        },
+        "regex": "/postgres:5432\\/(claimsure_[0-9]{2})/",
+        "current": {
+          "text": "claimsure_xx",
+          "value": "claimsure_xx"
+        },
+        "refresh": 1,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false
+      }
+    ]
+  },
+  "links": []
+}
