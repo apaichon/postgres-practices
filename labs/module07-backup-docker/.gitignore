@@ -1,0 +1,6 @@
+.env
+artifacts/*
+!artifacts/.gitkeep
+archive/*
+!archive/.gitkeep
+

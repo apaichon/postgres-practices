@@ -7,7 +7,7 @@ NODE ?= replica2
 LAB8 := python3 labs/module08-replication/lab.py
 LAB_NO ?= list
 
-.PHONY: slides start overview slides-install help
+.PHONY: slides start overview slides7-docker slides-install help
 
 slides: slides/node_modules/.package-lock.json
 	cd slides && npm run slides:$(MODULE) -- --port $(PORT) $(ARGS)
@@ -16,6 +16,10 @@ start: slides
 
 overview:
 	$(MAKE) slides MODULE=0
+
+slides7-docker: PORT = 3037
+slides7-docker:
+	$(MAKE) slides MODULE=7:docker PORT=$(PORT)
 
 slides-install:
 	cd slides && npm ci
@@ -30,6 +34,7 @@ help:
 	@echo "make slides MODULE=4:clone PORT=3044 Start the isolated security clone lab"
 	@echo "make slides MODULE=4:th PORT=3046  Start the imported Thai Pure SQL security deck"
 	@echo "make slides MODULE=5 PORT=3035    Start the source Thai architecture deck"
+	@echo "make slides7-docker               Start Module 7 Docker backup deck on port 3037"
 	@echo "make lab5 LAB_NO=list             List source Module 5 SQL sections"
 	@echo "make lab5-setup                   Seed the dedicated architecture_m5_xx DB"
 	@echo "make slides MODULE=8 PORT=3048    Start the source Module 8 deck (English)"

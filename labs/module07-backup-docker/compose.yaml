@@ -1,0 +1,90 @@
+services:
+  primary:
+    image: postgres:18
+    environment:
+      PGDATA: /pgdata
+      POSTGRES_DB: backup_lab
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${M7_POSTGRES_PASSWORD:-postgres-lab}
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=test ! -f /archive/%f && cp %p /archive/%f
+      - -c
+      - archive_timeout=10s
+      - -c
+      - summarize_wal=on
+      - -c
+      - wal_summary_keep_time=14d
+    ports:
+      - "${M7_SOURCE_PORT:-55432}:5432"
+    volumes:
+      - primary-data:/pgdata
+      - ./archive:/archive
+      - ./artifacts:/artifacts
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d backup_lab"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  logical-target:
+    image: postgres:18
+    environment:
+      PGDATA: /pgdata
+      POSTGRES_DB: restore_admin
+      POSTGRES_USER: restore_admin
+      POSTGRES_PASSWORD: ${M7_POSTGRES_PASSWORD:-postgres-lab}
+    ports:
+      - "${M7_LOGICAL_PORT:-55433}:5432"
+    volumes:
+      - logical-target-data:/pgdata
+      - ./artifacts:/artifacts:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restore_admin -d restore_admin"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  physical-restore:
+    image: postgres:18
+    profiles: ["restore"]
+    environment:
+      PGDATA: /pgdata
+    command: ["postgres", "-c", "archive_mode=off"]
+    ports:
+      - "${M7_PHYSICAL_PORT:-55434}:5432"
+    volumes:
+      - ./artifacts/physical/restore:/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d backup_lab"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+
+  pitr-restore:
+    image: postgres:18
+    profiles: ["restore"]
+    environment:
+      PGDATA: /pgdata
+    command: ["postgres", "-c", "archive_mode=off"]
+    ports:
+      - "${M7_PITR_PORT:-55435}:5432"
+    volumes:
+      - ./artifacts/pitr/data:/pgdata
+      - ./archive:/archive:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d backup_lab"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+
+volumes:
+  primary-data:
+  logical-target-data:
+

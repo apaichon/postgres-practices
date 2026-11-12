@@ -20,13 +20,76 @@ download: false
 
 ## ตั้งทีละค่า วัด workload เคลมเดิม แล้วคืนค่า
 
-<footer class="cs-footer"><span>ClaimSure · ภาพรวม / เตรียมแล็บ</span><span>1 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · ภาพรวม / เตรียมแล็บ</span><span>1 / 37</span></footer>
 
 <!--
 Speaker notes:
 อ้างอิงคู่มือบท 6 หัวข้อ ภาพรวม
 บทนี้ใช้ฐานข้อมูล claimsure_xx และ schema claimsure จากบท 1–2 ต่อเนื่องกัน เปิดคู่มือบทนี้ไว้เพื่อทำ SQL/native commands ทีละขั้น ภาพปก: ./assets/module-06-configuration-cover-enterprise-blue.png
 
+Source: ../labs/module-06-configuration.md · ภาพรวม
+-->
+
+---
+layout: default
+class: continuous-deck cs-concept-deck cs-module-6
+---
+
+# ห้ากลุ่มที่บทนี้วัด
+
+| กลุ่ม | แล็บ | ปรับแล้วช่วยอะไร |
+| --- | --- | --- |
+| Memory | 6B | ลด sort spill ของรายงานเดิม |
+| Timeout | 6C | ตัดคำสั่งหรือการรอ lock ที่ค้างนาน |
+| WAL | 6D | ผ่อนแรงกดของ checkpoint |
+| Autovacuum | 6E | ปรับเกณฑ์ dead tuples ก่อน vacuum |
+| Logging | 6F | ให้ slow query, temp file และ lock wait โผล่ใน log |
+
+<p class="cs-takeaway">วัดห้ากลุ่มบน workload เดิม · 6A อ่านขอบเขตก่อนเปลี่ยน · 6G เลือกเก็บหรือคืน</p>
+
+<footer class="cs-footer"><span>ClaimSure · ภาพรวม / กลุ่ม configuration</span><span>2 / 37</span></footer>
+
+<!--
+Speaker notes:
+อ้างอิงคู่มือบท 6 หัวข้อ ภาพรวม
+PostgreSQL 18 มีหมวด runtime configuration มากกว่าห้ากลุ่มนี้ เช่น connections, resource usage, query planning, replication บทนี้วัดห้ากลุ่มที่ผูกกับเคลมชุดเดิมใน 6B–6F 6A เป็นการอ่าน effective value และเลือกขอบเขต 6G เป็นการสรุปหลักฐานก่อนส่งบท 7 6A ยังอ่าน shared_buffers กับ max_connections แต่ไม่เปลี่ยนสองค่านี้บน shared cluster
+
+Sources:
+- https://www.postgresql.org/docs/18/runtime-config.html
+Source: ../labs/module-06-configuration.md · ภาพรวม
+-->
+
+---
+layout: default
+class: continuous-deck cs-concept-deck cs-module-6
+---
+
+# ค่าสำคัญ และผลเมื่อปรับ
+
+| ค่า | กลุ่ม | ปรับแล้วช่วยอะไร |
+| --- | --- | --- |
+| work_mem | Memory | งบ sort/hash ต่อ operation |
+| statement_timeout, lock_timeout | Timeout | ยกเลิกคำสั่ง หรือการรอ lock |
+| max_wal_size | WAL | ผ่อนแรงกด checkpoint |
+| autovacuum_vacuum_threshold, autovacuum_vacuum_scale_factor | Autovacuum | เกณฑ์ dead tuples |
+| log_min_duration_statement, log_temp_files, log_lock_waits | Logging | ทำให้เหตุการณ์เหล่านี้โผล่ใน log |
+
+<p class="cs-takeaway">6A อ่าน shared_buffers กับ max_connections ด้วย · สองค่านี้คงเดิมบน shared</p>
+
+<footer class="cs-footer"><span>ClaimSure · ภาพรวม / ค่าสำคัญ</span><span>3 / 37</span></footer>
+
+<!--
+Speaker notes:
+อ้างอิงคู่มือบท 6 หัวข้อ ภาพรวม และคำสั่งอ่าน pg_settings ใน 6A
+work_mem ใช้กับ sort/hash แต่ละ operation และต้องคิดหลาย session พร้อมกัน statement_timeout กับ lock_timeout คนละขอบเขต max_wal_size เป็น soft limit ของ checkpoint ปริมาณ WAL ที่ INSERT สร้างยังตาม workload autovacuum สองค่านี้กำหนด eligibility ไม่ได้รับประกันเวลาที่งานเสร็จ ค่า logging ทำให้เหตุการณ์ที่มีอยู่แล้วมองเห็นได้ deadlock_timeout ใน 6F กำหนดช่วงเริ่มรายงาน lock wait แยกจาก lock_timeout shared_buffers คือ cache ของหน้า data ทั้ง instance max_connections คือเพดาน connection ทั้งสองถูกอ่านใน 6A และไม่ถูกเปลี่ยนบน shared
+
+Sources:
+- https://www.postgresql.org/docs/18/runtime-config-resource.html
+- https://www.postgresql.org/docs/18/runtime-config-client.html
+- https://www.postgresql.org/docs/18/runtime-config-wal.html
+- https://www.postgresql.org/docs/18/runtime-config-vacuum.html
+- https://www.postgresql.org/docs/18/runtime-config-logging.html
+- https://www.postgresql.org/docs/18/runtime-config-locks.html
 Source: ../labs/module-06-configuration.md · ภาพรวม
 -->
 
@@ -47,7 +110,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">Shared คง settings เดิม · ALTER SYSTEM/CHECKPOINT ทำเฉพาะ private</p>
 
-<footer class="cs-footer"><span>ClaimSure · ภาพรวม / เตรียมแล็บ</span><span>2 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · ภาพรวม / เตรียมแล็บ</span><span>4 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -68,7 +131,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental
 
 <p class="cs-concept-caption">SHOW อ่านค่าที่ connection นี้ใช้จริง</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6A</span><span>3 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6A</span><span>5 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -92,7 +155,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental
 
 <p class="cs-concept-caption">อ่าน context, source และ pending_restart ก่อนเลือกวิธี activation</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6A</span><span>4 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6A</span><span>6 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -115,13 +178,29 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental cs-infographic
 
 <p class="cs-concept-caption">เลือกขอบเขตที่เล็กพอ · ตรวจ effective value / source / context</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6A</span><span>5 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6A</span><span>7 / 37</span></footer>
 
 <!--
 Speaker notes:
 อ้างอิงคู่มือบท 6 หัวข้อ 6A · อธิบายก่อนคำสั่งที่เกี่ยวข้อง
 ภาพเป็นวงขอบเขตจาก instance/database/role/session/transaction ไม่ใช่คำสั่งที่ต้องเปลี่ยนทุกชั้น 6A ใช้ SET LOCAL และ role/database default ใน transaction; ALTER SYSTEM ของ D ใช้ได้เฉพาะ private cluster ของนักเรียนตามคู่มือ
 Source: ../labs/module-06-configuration.md · 6A
+-->
+
+---
+layout: default
+class: continuous-deck cs-concept-deck cs-module-6 cs-infographic
+---
+
+<img src="./assets/module-06-configuration-architecture-map-v1.png" style="display:block;width:100%;height:430px;object-fit:contain;margin:-1rem auto 0;" alt="PostgreSQL architecture map showing the scope and location of important configuration settings" />
+
+<footer class="cs-footer"><span>ClaimSure · Architecture และ configuration map</span><span>8 / 37</span></footer>
+
+<!--
+Speaker notes:
+ภาพรวมตำแหน่งของค่าที่ใช้ในบท 6 ก่อนเริ่ม Lab 6A สีของป้ายแยก scope ที่เหมาะสม: session ใช้กับ work_mem, timeout และ logging บางค่า; table options ใช้ override autovacuum; server configuration ใช้กับ capacity, shared memory และ WAL/checkpoint โดย shared_buffers ต้อง restart
+
+Source: ../labs/module-06-configuration.md · ภาพรวม / 6A–6F
 -->
 
 ---
@@ -145,7 +224,7 @@ WHERE name IN ('work_mem','max_wal_size',
 
 <p class="cs-takeaway">effective รวม override แล้ว · reset_val ไม่จำเป็นต้องเท่า boot_val</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6A</span><span>6 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6A</span><span>9 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -171,7 +250,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">role default ไม่เปลี่ยน connection ที่เปิดอยู่ทันที</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6A</span><span>7 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6A</span><span>10 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -192,7 +271,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental
 
 <p class="cs-concept-caption">work_mem ไม่ใช่งบรวมต่อหนึ่ง connection หรือทั้ง server</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6B</span><span>8 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6B</span><span>11 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -215,7 +294,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental cs-infographic
 
 <p class="cs-concept-caption">work_mem ต่อ operation · คิดหลาย workers และหลาย sessions ร่วมด้วย</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6B</span><span>9 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6B</span><span>12 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -245,7 +324,7 @@ ROLLBACK;
 
 <p class="cs-takeaway">ทดสอบ original → 64kB → 4MB → 32MB อย่างละ 3 รอบ</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6B</span><span>10 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6B</span><span>13 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -272,7 +351,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">work_mem เป็นงบต่อ operation · ต้องคิด concurrency ด้วย</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6B</span><span>11 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6B</span><span>14 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -293,7 +372,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental
 
 <p class="cs-concept-caption">A ถือ lock · B รอ · บันทึก SQLSTATE แล้วคืน transaction ตาม 6C</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6C</span><span>12 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6C</span><span>15 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -322,7 +401,7 @@ ROLLBACK TO SAVEPOINT slow_call;
 ROLLBACK;
 ```
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6C</span><span>13 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6C</span><span>16 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -349,7 +428,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">ยอดเคลมยัง 15,000 · statement timeout กับ lock timeout คนละขอบเขต</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6C</span><span>14 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6C</span><span>17 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -370,7 +449,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental
 
 <p class="cs-concept-caption">เพิ่ม max_wal_size ไม่ได้ลด WAL ที่ INSERT ต้องสร้างโดยตรง</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6D.1–6D.4</span><span>15 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6D.1–6D.4</span><span>18 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -394,7 +473,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental cs-infographic
 
 <p class="cs-concept-caption">6D ใช้ private cluster · 64MB เทียบ 256MB ไม่ใช่การลด WAL ของ INSERT</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6D.1–6D.4</span><span>16 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6D.1–6D.4</span><span>19 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -416,7 +495,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">ไม่เปิด TCP · ใช้ labadmin เฉพาะ instance ใต้ home</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.1</span><span>17 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.1</span><span>20 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -448,7 +527,7 @@ pg_dump -Fc --no-owner --no-acl "${CORE_TABLES[@]}" \
 
 <p class="cs-takeaway">หลังเตรียม workspace ตาม 6D.1 · ตรวจ archive list ก่อน restore</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.1</span><span>18 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.1</span><span>21 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -471,7 +550,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">CALL cs_load_claims() ทำ data load · cs_wal_results เก็บ metrics</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.2</span><span>19 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.2</span><span>22 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -494,7 +573,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">Preparation อยู่นอก sample · CALL ต้องอยู่นอก BEGIN ของผู้เรียก</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.3</span><span>20 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.3</span><span>23 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -522,7 +601,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">max_wal_size เปลี่ยน checkpoint pressure ไม่ลด WAL ที่ INSERT ต้องสร้าง</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.3–6D.4</span><span>21 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.3–6D.4</span><span>24 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -552,7 +631,7 @@ psql -X "${PRIVATE[@]}" -c 'SHOW max_wal_size;'
 
 <p class="cs-takeaway">ไฟล์ต้องตรงเดิม · ตรวจ effective value หลัง reload</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.4</span><span>22 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6D.4</span><span>25 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -573,7 +652,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental
 
 <p class="cs-concept-caption">ถึง threshold ไม่ใช่คำรับประกันว่าจะเสร็จภายในกี่วินาที</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6E</span><span>23 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6E</span><span>26 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -599,7 +678,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">500 + 0.025 × 100006 · ใช้ reltuples/ค่าจริงของเครื่องด้วย</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6E</span><span>24 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6E</span><span>27 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -630,7 +709,7 @@ WHERE relid='claimsure.claim'::regclass;
 
 <p class="cs-takeaway">สังเกตอย่างน้อย 75 วินาที · จด not observed หากยังไม่เห็น</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6E</span><span>25 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6E</span><span>28 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -657,7 +736,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">เก็บผลก่อนคืน status · manual VACUUM ท้ายบทคือ reset</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6E</span><span>26 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6E</span><span>29 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -680,7 +759,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">options_restored ต้อง true · ข้อมูลรวมกลับ 100,006 แถว</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6E</span><span>27 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6E</span><span>30 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -701,7 +780,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental
 
 <p class="cs-concept-caption">ไม่มี log line ไม่ได้ยืนยันว่าเหตุการณ์ไม่เกิด</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6F.1–6F.2</span><span>28 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6F.1–6F.2</span><span>31 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -731,7 +810,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">เปิด logging ทำให้เหตุการณ์ที่มีอยู่มองเห็นได้</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6F.1</span><span>29 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6F.1</span><span>32 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -762,7 +841,7 @@ ROLLBACK;
 
 <p class="cs-takeaway">private เท่านั้น · ROLLBACK คืน settings ของ transaction</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6F.2</span><span>30 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6F.2</span><span>33 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -789,7 +868,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 
 <p class="cs-takeaway">จดจำนวนจริง · ไม่บังคับผล 2 / 2 / 1</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6F.2</span><span>31 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6F.2</span><span>34 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -810,7 +889,7 @@ class: continuous-deck cs-concept-deck cs-module-6 cs-fundamental cs-infographic
 
 <p class="cs-concept-caption">อาการ → setting ที่เกี่ยวข้อง → activation → วัดผล → keep หรือ reset</p>
 
-<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6G</span><span>32 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · Fundamental ก่อน Lab 6G</span><span>35 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -833,7 +912,7 @@ class: continuous-deck cs-concept-deck cs-module-6
 | slow / lock logging | visibility ของเหตุการณ์ | log volume |
 | table autovacuum | dead tuples / completed passes | worker และ baseline |
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6G</span><span>33 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6G</span><span>36 / 37</span></footer>
 
 <!--
 Speaker notes:
@@ -861,7 +940,7 @@ ORDER BY claim_no;
 
 <p class="cs-takeaway">หยุด private ด้วย pg_ctl · เก็บ log/metrics · shared settings คงเดิม</p>
 
-<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6G</span><span>34 / 34</span></footer>
+<footer class="cs-footer"><span>ClaimSure · คู่มือ Lab 6G</span><span>37 / 37</span></footer>
 
 <!--
 Speaker notes:

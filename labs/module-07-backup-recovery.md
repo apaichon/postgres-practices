@@ -2,6 +2,8 @@
 
 [กลับสารบัญ](README.md)
 
+> ต้องการ Lab แบบ standalone บนเครื่องด้วย Docker Compose: [PostgreSQL 18 Backup, Daily Incremental, Global Objects และ PITR](module07-backup-docker/README.md)
+
 ทำบท 6 จนคืนค่า shared แล้ว ปิดทุก transaction/workload ของบทอื่น ใช้ customer/policy/claim 100,006 เคลมชุดเดิม **ไม่สร้าง recovery_event** ลำดับ 7.1 → 7.2 → 7.3 → 7.4 → 7.5 ต้องทำใน Bash เดิมและอ่านผลแต่ละขั้น
 
 Logical archive เก็บสามตารางพร้อม identity sequences และ indexes ส่วนการนำข้อมูลกลับ shared ใช้ **data-only + TRUNCATE สามตารางใน transaction เดียว** เพื่อเก็บ claim_detail_v, claim_tax, review_claim และรายงานบท 3 ไว้ คืนตามลำดับ customer → policy → claim เพื่อให้แถวที่ FK อ้างถึงมีอยู่ก่อน ไม่มี DROP SCHEMA/--clean บน shared วิธีนี้เป็นแบบฝึกกู้ข้อมูลบน DDL เดิม ไม่ใช่การกู้ทั้ง schema เมื่อ DDL สูญหาย
