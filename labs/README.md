@@ -20,6 +20,7 @@
 | 5 (ต่อเนื่อง) | [Architecture — continuous เดิม](module-05-architecture-continuous.md) | ใช้ claimsure.claim เดิม; คู่มือที่ continuous runner ใช้ |
 | 6 | [Configuration](module-06-configuration.md) | อ่านค่าเดิม, memory, timeout, WAL, autovacuum, logging, decision |
 | 7 | [Backup and recovery](module-07-backup-recovery.md) | Logical restore, cold copy, physical backup, PITR |
+| 7 (Docker local) | [Backup, incremental และ PITR ด้วย Docker Compose](module07-backup-docker/README.md) | Logical/global objects, weekly full, daily incremental, physical restore และ PITR พร้อมไฟล์จริงบนเครื่อง |
 | 8 | [Replication & HA — 8A–8E](module-08-replication.md) | Compose primary/replica, เพิ่ม-หยุด Node, Logical subscriber และ PgBouncer |
 | 9 | [Monitoring](module-09-monitoring.md) | Workload, blocking, deadlock, statistics, Grafana evidence |
 | 10 | [Modern features](module-10-modern-features.md) | JSONB, full-text, partition, optional vector, RLS access paths |

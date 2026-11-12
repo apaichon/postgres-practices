@@ -28,6 +28,7 @@ make slides MODULE=2 PORT=3032
 make slides MODULE=5 PORT=3035
 make slides MODULE=4:clone PORT=3044
 make slides MODULE=4:th PORT=3046
+make slides7-docker
 make slides MODULE=8 PORT=3048
 make slides ARGS=--open
 ```

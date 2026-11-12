@@ -24,6 +24,8 @@
     "slides:5": "slidev module-05-architecture-th.md",
     "slides:6": "slidev module-06-configuration-simple.md",
     "slides:7": "slidev module-07-backup-recovery.md",
+    "slides:7:docker": "slidev module-07-backup-docker.md",
+    "build:7:docker": "slidev build module-07-backup-docker.md --out dist/module07-docker",
     "slides:9": "slidev module-09-monitoring.md",
     "slides:10": "slidev module-10-modern-features-supabase.md",
     "slides:8": "slidev module-08-replication.md",

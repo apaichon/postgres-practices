@@ -4,6 +4,22 @@
 
 รับต่อ claimsure.claim 100,006 แถวจากบท 3 หลังบท 5 คืนข้อมูลแล้ว A/B/C/E ใช้ shared own database ส่วน D/F ใช้ private copy ของ customer/policy/claim ชุดนี้ ไม่ใช้ตาราง report/queue/wal_probe ชุดใหม่
 
+## ภาพรวมก่อนเริ่ม Lab
+
+โมดูลนี้มี **7 ช่วง (6A–6G)**: 6A–6F เป็นการอ่านค่าและทดลอง 6 ช่วง ส่วน 6G เป็นการสรุปผลและตรวจสภาพก่อนส่งต่อบท 7; หัวข้อย่อ 6D.1–6D.4 และ 6F.1–6F.2 เป็นขั้นตอนของ Lab เดียวกัน ไม่ได้นับแยกเป็น Lab ใหม่
+
+| Lab | ค่าที่อ่าน/แก้ไข | เหตุผลที่ทดลอง | วัดผลอย่างไร |
+| --- | --- | --- | --- |
+| **6A — ขอบเขตการตั้งค่า** | อ่านค่าสำคัญจาก `pg_settings`; ทดลอง `SET LOCAL work_mem='32MB'` และ `ALTER ROLE ... SET work_mem='32MB'` ใน transaction | แยกให้ออกว่า session, transaction, role/database default มีขอบเขตและเวลาที่เกิดผลต่างกัน | `SHOW work_mem` ระหว่าง transaction และตรวจ `restored=true` หลัง `ROLLBACK` |
+| **6B — Sort memory** | เปรียบเทียบ `work_mem` เดิม, `64kB`, `4MB`, `32MB` ด้วย `SET LOCAL` | หาค่าที่ลด sort spill โดยไม่ใช้ memory เกินงบเมื่อมีหลาย sort/hash และหลาย connection พร้อมกัน | รันคำสั่งเดิมค่าละ 3 รอบ; เทียบ median Execution Time, Sort Method/Space และ temp blocks |
+| **6C — Timeout** | `statement_timeout='200ms'` และ `lock_timeout='200ms'` ด้วย `SET LOCAL` | หยุด statement ที่นานเกินไป และป้องกันการรอ row lock ไม่สิ้นสุด | ตรวจ SQLSTATE `57014` สำหรับ statement timeout และ `55P03` สำหรับ lock timeout; rollback แล้วยืนยันว่ายอดเคลมยังเป็น `15000` |
+| **6D — WAL/checkpoint** | ใน private server เปรียบเทียบ `max_wal_size='64MB'` กับ `256MB` | ทดสอบว่า WAL budget ที่ใหญ่ขึ้นลด checkpoint pressure หรือไม่; ค่านี้ไม่ได้ทำให้ WAL ต่อ INSERT ลดลงโดยตรง | โหลด 120,000 แถวเหมือนกันต่อ pass; เทียบ WAL MiB, load time, checkpoint requested/completed และ write time |
+| **6E — Autovacuum** | ปิด insert trigger ชั่วคราวด้วย `autovacuum_vacuum_insert_threshold=-1`; ทดลอง `autovacuum_vacuum_threshold=500` และ `autovacuum_vacuum_scale_factor=0.025` | ให้ autovacuum ตอบสนองต่อ dead tuples ของ claim workload ตาม threshold ที่คำนวณได้ | สร้าง dead tuples 5,000 แถว; ติดตาม `n_dead_tup`, `autovacuum_count`, `last_autovacuum` และขนาด relation ก่อน/หลัง |
+| **6F — Logging** | ใน private server ทดลอง `log_min_duration_statement='500ms'`, `log_temp_files=0`, `log_lock_waits=on`, `deadlock_timeout='100ms'` | ทำให้ slow statement, temporary file และ lock wait ของ workload เดิมมองเห็นได้ใน log | เทียบ baseline/candidate ด้วย `application_name`; นับ duration, temporary-file และ still-waiting log lines |
+| **6G — สรุป/ส่งต่อ** | ไม่แก้ค่าใหม่; รวบรวมผลและหลักฐานการคืนค่า | แปลผลทดลองเป็นข้อเสนอที่มี workload และหลักฐานรองรับ | ตรวจ shared claim ยังมี 100,006 แถว, ยอดเดิมและ table options ถูกคืนค่า; เก็บ private log/archive ไว้ review |
+
+**หลักการวัดผล:** ทุกการเปรียบเทียบต้องใช้ workload และข้อมูลชุดเดิม เปลี่ยนทีละค่า บันทึก before/candidate และคืนค่าหลังวัดเสร็จ A/B/C/E ใช้ shared database จึงต้องระวังการคืนค่าเป็นพิเศษ; D/F ใช้ private server เพื่อไม่ให้การทดลองระดับ server กระทบผู้ใช้อื่น
+
 ## 6A — อ่านค่าเดิมและทดลองขอบเขต transaction
 
 **Bash A** ตาม environment ใน README:

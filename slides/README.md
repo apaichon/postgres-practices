@@ -14,13 +14,13 @@
 | 4 (Pure SQL ไทย) | [Security และ User Management](module-04-security-user-management-th.md) | แทรกในเนื้อหา | 38 | [คู่มือตามสไลด์ไทย 4A–4H](../labs/module-04-security-user-management-th.md) |
 | 5 | [Architecture — ต้นฉบับไทย](module-05-architecture-th.md) | แทรกในเนื้อหา | 33 | [คู่มือ 5A–5G](../labs/module-05-architecture.md) |
 | 5 (ต่อเนื่อง) | [Architecture — continuous เดิม](module-05-architecture-continuous.md) | 16 หน้า | 29 | [คู่มือ 5 เดิม](../labs/module-05-architecture-continuous.md) |
-| 6 | [Configuration](module-06-configuration-simple.md) | 11 หน้า | 34 | [คู่มือ 6](../labs/module-06-configuration.md) |
+| 6 | [Configuration](module-06-configuration-simple.md) | 11 หน้า | 37 | [คู่มือ 6](../labs/module-06-configuration.md) |
 | 7 | [Backup & Recovery](module-07-backup-recovery.md) | 12 หน้า | 32 | [คู่มือ 7](../labs/module-07-backup-recovery.md) |
 | 8 | [Replication & HA — source](module-08-replication.md) | แทรกในเนื้อหา | 21 | [คู่มือ 8A–8E](../labs/module-08-replication.md) |
 | 9 | [Monitoring](module-09-monitoring.md) | 10 หน้า | 31 | [คู่มือ 9](../labs/module-09-monitoring.md) |
 | 10 | [Modern PostgreSQL](module-10-modern-features-supabase.md) | 13 หน้า | 34 | [คู่มือ 10](../labs/module-10-modern-features.md) |
 
-ชุดหลักรวม **310 หน้า** มี Fundamentals **95 หน้า** (นับบท 8 English หนึ่งชุด และไม่นับเวอร์ชัน 4 Clone / Pure SQL ไทย / 5 continuous) บท 1–4, 6–7, 9–10 จัด Fundamental และ infographic ไว้ก่อนแล็บที่ใช้แนวคิดนั้น ส่วนบท 5 และ 8 คงลำดับต้นฉบับ พร้อม footer แสดงหัวข้อคู่มือและเลขหน้าสไลด์
+ชุดหลักรวม **313 หน้า** มี Fundamentals **95 หน้า** (นับบท 8 English หนึ่งชุด และไม่นับเวอร์ชัน 4 Clone / Pure SQL ไทย / 5 continuous) บท 1–4, 6–7, 9–10 จัด Fundamental และ infographic ไว้ก่อนแล็บที่ใช้แนวคิดนั้น ส่วนบท 5 และ 8 คงลำดับต้นฉบับ พร้อม footer แสดงหัวข้อคู่มือและเลขหน้าสไลด์
 
 ## พื้นฐานก่อนเริ่มแล็บ
 
@@ -31,7 +31,7 @@
 | 3 | Measurement loop, estimates/actuals, index access paths, statistics/maintenance, partitions/projections |
 | 4 | Authentication/authorization/ownership, roles, grants/RLS, trusted context, invoker/definer/audit |
 | 5 | Processes/memory/storage, tuples/keys, snapshots/isolation, WAL, rollback/vacuum/checkpoint |
-| 6 | Setting scopes, activation contexts, memory budgets, WAL/checkpoints, autovacuum eligibility, measurement/logging |
+| 6 | Five measured groups (memory, timeout, WAL, autovacuum, logging), setting scopes, activation contexts, memory budgets, WAL/checkpoints, autovacuum eligibility, measurement/logging |
 | 7 | RPO/RTO, logical/physical backups, consistency, PITR chain, restore verification/dependencies |
 | 8 | Physical streaming, slots/WAL retention, lag/commit modes, fencing/failover/rejoin, logical replication, pool context |
 | 9 | Evidence sources, gauges/counters/rates, latency/throughput/concurrency, locks/deadlocks, correlation |
@@ -345,24 +345,27 @@ make lab5 LAB_NO=5E-A
 
 ## ลำดับสไลด์บท 6 ตามหัวข้อคู่มือ
 
-[Configuration](module-06-configuration-simple.md) · **34 หน้า / 11 Fundamentals**
+[Configuration](module-06-configuration-simple.md) · **37 หน้า / 11 Fundamentals**
 
 | หัวข้อคู่มือ | หน้าพื้นฐาน | หน้าแล็บ / ตรวจผล |
 | --- | --- | --- |
-| 6A | 3–5 | 6–7 |
-| 6B | 8–9 | 10–11 |
-| 6C | 12 | 13–14 |
-| 6D.1–6D.4 | 15–16 | — |
-| 6D.1 | — | 17–18 |
-| 6D.2 | — | 19 |
-| 6D.3 | — | 20 |
-| 6D.3–6D.4 | — | 21 |
-| 6D.4 | — | 22 |
-| 6E | 23 | 24–27 |
-| 6F.1–6F.2 | 28 | — |
-| 6F.1 | — | 29 |
-| 6F.2 | — | 30–31 |
-| 6G | 32 | 33–34 |
+| ภาพรวม ห้ากลุ่มและค่าสำคัญ | 2–3 | — |
+| เตรียม shared / private | — | 4 |
+| 6A | 5–7 | 9–10 |
+| Architecture / configuration map | 8 | — |
+| 6B | 11–12 | 13–14 |
+| 6C | 15 | 16–17 |
+| 6D.1–6D.4 | 18–19 | — |
+| 6D.1 | — | 20–21 |
+| 6D.2 | — | 22 |
+| 6D.3 | — | 23 |
+| 6D.3–6D.4 | — | 24 |
+| 6D.4 | — | 25 |
+| 6E | 26 | 27–30 |
+| 6F.1–6F.2 | 31 | — |
+| 6F.1 | — | 32 |
+| 6F.2 | — | 33–34 |
+| 6G | 35 | 36–37 |
 
 6A/B/C/E ใช้ shared claimsure_xx; 6D/F ใช้ private copy ตามคู่มือ ภาพ WAL/checkpoint ไม่ใช่ค่าที่วัดจริง และ max_wal_size เป็น soft limit
 
@@ -400,6 +403,21 @@ make lab5 LAB_NO=5E-A
 | 7.6a–7.6b | — | 32 |
 
 คง dependency customer → policy → claim; พิสูจน์แถวหลัง base backup ใน PITR, แยก paused recovery/verification และ cleanup ตามคู่มือ ใช้รหัส 7.1a–7.6b แทน A2/C1/D2 ของฉบับเก่า
+
+### Module 7 · Docker backup lab แบบสรุป
+
+[Backup & Recovery Docker Summary](module-07-backup-docker.md) · **10 หน้า**
+
+```bash
+# จาก project root
+make slides7-docker
+
+# หรือ build static deck
+cd slides
+npm run build:7:docker
+```
+
+Deck นี้สรุป conceptual model และคำสั่ง PostgreSQL มาตรฐานสำหรับ logical backup, global objects, physical full/incremental, PITR, schedule และ restore verification โดยอ้างอิง Docker Lab แบบ standalone
 
 
 ## ลำดับสไลด์บท 8 ตามหัวข้อคู่มือ
